@@ -18,29 +18,29 @@ class Test_002_VFL_Clean_Up(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
+        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
         driver.find_element_by_name("UserName").clear()
         driver.find_element_by_name("UserName").send_keys(client_variables.username1)
         driver.find_element_by_name("Password").clear()
         driver.find_element_by_name("Password").send_keys(client_variables.pword1)
         driver.find_element_by_css_selector("button.btn.btn-primary").click()
         print "Logged in successfully"
-        """
         #Select the VFL Module
+        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
-        time.sleep(5)
         print "Moved to VFL Module"
-        """
         time.sleep(5)
         #Delete all VFL records
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60)
         amount_of_records = driver.find_element_by_xpath("//*[@id='dtVFL_info']").text
         print amount_of_records
-        time.sleep(1)
         while amount_of_records != '0 to 0 of 0 entries':
             function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/thead/tr/th[1]/input")
             driver.find_element_by_xpath("//*[@id='dtVFL']/thead/tr/th[1]/input").click()
-            time.sleep(3)
+            function_module.wait_for_element_XPATH(driver, "//*[@id='removeVfl']/i")
             driver.find_element_by_xpath("//*[@id='removeVfl']/i").click()
-            time.sleep(3)
+            function_module.wait_for_element_XPATH(driver, "//*[@id='bot2-Msg1']")
             driver.find_element_by_xpath("//*[@id='bot2-Msg1']").click()
             time.sleep(3)
             amount_of_records = driver.find_element_by_xpath("//*[@id='dtVFL_info']").text
@@ -48,6 +48,7 @@ class Test_002_VFL_Clean_Up(unittest.TestCase):
         print "Total number of Test VFL Records now = 0"
         #Log out of the application
         driver.find_element_by_css_selector("i.fa.fa-power-off").click()
+        function_module.wait_for_element_ID(driver, "bot2-Msg1")
         driver.find_element_by_id("bot2-Msg1").click()
         print "All VFL Records deleted"
 
@@ -65,7 +66,7 @@ class Test_999_System_Clean_Up(unittest.TestCase):
         
     def test_008_generate_summary_email(self):
         """generate and send summary email"""
-        email_module.SummaryMail()
+        email_module.summary_mail()
 
     def test_009_clear_out_test_run_data(self):
         """remove all files created during test run"""

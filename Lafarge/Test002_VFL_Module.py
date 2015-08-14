@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import NoAlertPresentException
 import unittest, time, datetime, re, os
-import client_variables, function_module
-
-"""Testing Git Hub - Edited Twice - Thrice"""
+import client_variables, function_module, email_module
 
     
 class Test_001_VFL_Forms(unittest.TestCase):
@@ -30,6 +30,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
+        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
         driver.find_element_by_name("UserName").clear()
         driver.find_element_by_name("UserName").send_keys(client_variables.username1)
         driver.find_element_by_name("Password").clear()
@@ -37,13 +38,12 @@ class Test_001_VFL_Forms(unittest.TestCase):
         driver.find_element_by_css_selector("button.btn.btn-primary").click()
         function_module.log_to_file('Test_VFL_Module:test001_add_new_VFL_record_test_details:Successfully logged in and started test')
         print "Logged in successfully"
-        """
         #Select the VFL Module
+        function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
         print "Moved to VFL Module"
-        time.sleep(5)
-        """
         #Choose to add a new VFL Record
+        function_module.wait_for_element_CSS(driver, "i.glyphicon.glyphicon-plus", 60)
         driver.find_element_by_css_selector("i.glyphicon.glyphicon-plus").click()
         print "Found new VFL button successfully"
         #Verify Due Date is Mandatory
@@ -84,13 +84,13 @@ class Test_001_VFL_Forms(unittest.TestCase):
         driver.find_element_by_id("s2id_autogen1").click()
         driver.find_element_by_id("s2id_autogen1").send_keys(client_variables.root_wg)
         time.sleep(2)
-        elem = driver.find_element_by_xpath("//*[@id='select2-drop']/ul/li").text
+        elem = driver.find_element_by_xpath("//*[@id='select2-drop']/ul/li")
         try:
-            assert elem == 'No matches found'
+            assert elem.text == 'No matches found'
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test001_add_new_VFL_record_test_details:Workgroup with Allow Data = NO was selected', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Managed to select a WorkGroup with Allow Data = NO'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test001', 'Test was able to select a WorkGroup on the Details tab that has Allow Data = NO', 'AssertionError')
         else:
             function_module.log_to_file('Test_VFL_Module:test001_add_new_VFL_record_test_details:Workgroup with Allow Data = NO cannot be selected', 'PASSED')
             print 'Asserted that WorkGroups with Allow Data = NO cannot be selected'
@@ -102,15 +102,16 @@ class Test_001_VFL_Forms(unittest.TestCase):
         driver.find_element_by_id("s2id_autogen1").send_keys(client_variables.wg_default_true)
         time.sleep(1)
         driver.find_element_by_id("s2id_autogen1").send_keys(Keys.RETURN)
-        time.sleep(1)
+        time.sleep(4)
         #Assert that Business Unit field has been automatically populated
-        default_business_unit = driver.find_element_by_css_selector("#ProductLine")
+        elem = Select(driver.find_element_by_xpath("//*[@id='ProductLine']"))
+        default_business_unit = elem.first_selected_option.text
         try:
-            assert default_business_unit != None
+            assert default_business_unit == client_variables.bu1
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test001_add_new_VFL_record_test_details:Business Unit field was not automaticallly populated by WGs default Product Line', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Default Business Unit was not selected automatically'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test001', 'Test selected a WorkGroup on the Details tab and the Business Unit field was not automatically populated with its default Business Unit', 'AssertionError')
         else:
             function_module.log_to_file('Test_VFL_Module:test001_add_new_VFL_record_test_details:Default Business Unit was selected automatically', 'PASSED')
             print 'Asserted that Business Unit field was automatically populated when WG was selected'
@@ -133,13 +134,13 @@ class Test_001_VFL_Forms(unittest.TestCase):
         time.sleep(1)
         print "Selected Location successfully"
         #Assert Participants field is automatically populated with current user
-        current_participant = driver.find_element_by_css_selector(".select2-search-choice.select2-locked>div")
+        current_participant = driver.find_element_by_xpath("//*[@id='s2id_Participants']/ul/li[1]/div").text
         try:
-            assert current_participant.text == client_variables.fullname1
+            assert current_participant == client_variables.fullname1
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test001_add_new_VFL_record_test_details:Participants field not automatically populated with current user', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Participants field was not automatically populated with current user'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test001', 'When creating a new VFL Record, the Participants field was not populated with the current user by default', 'AssertionError')
         else:
             function_module.log_to_file('Test_VFL_Module:test001_add_new_VFL_record_test_details:Participants field was automatically populated with current user', 'PASSED')
             print 'Asserted that Participants field is automatically populated with current user'
@@ -147,19 +148,28 @@ class Test_001_VFL_Forms(unittest.TestCase):
         #Add second user to Participants field
         driver.find_element_by_id("s2id_autogen2").click()
         driver.find_element_by_id("s2id_autogen2").send_keys(client_variables.fullname2)
-        time.sleep(5)
+        time.sleep(6)
         driver.find_element_by_id("s2id_autogen2").send_keys(Keys.RETURN)
         time.sleep(1)
         print "Added second user to Participants field"
-        """
-        Add value to Employees Spoken to field
-        driver.find_element_by_css_selector(".bootstrap-tagsinput").click()
-        driver.find_element_by_css_selector(".bootstrap-tagsinput").clear()
-        driver.find_element_by_css_selector(".bootstrap-tagsinput").send_keys("Richie Test")
+        #Assert Second Participant added successfully
+        second_participant = driver.find_element_by_xpath("//*[@id='s2id_Participants']/ul/li[2]/div").text
+        try:
+            assert second_participant == client_variables.fullname2
+        except AssertionError:
+            function_module.log_to_file('Test_VFL_Module:test001_add_new_VFL_record_test_details:Second Participant was NOT added successfully', 'FAILED')
+            print 'ERROR - ASSERTION EXCEPTION - Second Participant was NOT added successfully'
+            email_module.error_mail('VFL Test001', 'Test failed to assign a second user to the Participants field', 'AssertionError')
+        else:
+            function_module.log_to_file('Test_VFL_Module:test001_add_new_VFL_record_test_details:Second Participant was added successfully', 'PASSED')
+            print 'Asserted that Second Participant was added successfully'
         time.sleep(1)
-        driver.find_element_by_css_selector(".bootstrap-tagsinput").send_keys(Keys.RETURN)
+        #Add value to Employees Spoken to field
+        driver.find_element_by_xpath("//*[@id='formDetails']/div/section[2]/section[2]/div/div/input").click()
+        driver.find_element_by_xpath("//*[@id='formDetails']/div/section[2]/section[2]/div/div/input").clear()
+        driver.find_element_by_xpath("//*[@id='formDetails']/div/section[2]/section[2]/div/div/input").send_keys("Richie Test")
         time.sleep(1)
-        """
+        driver.find_element_by_xpath("//*[@id='formDetails']/div/section[2]/section[2]/div/div/input").send_keys(Keys.RETURN)
         #Enter a string into the Comments field
         driver.find_element_by_id("Comments").clear()
         driver.find_element_by_id("Comments").send_keys("testing automated VFL creation")
@@ -180,14 +190,16 @@ class Test_001_VFL_Forms(unittest.TestCase):
         print "Set the Time In and Time Out fields"
         #Move successfully to the next tab
         driver.find_element_by_id("btnNextSubmit").click()
-        time.sleep(1)
+        function_module.wait_for_element_XPATH(driver, "//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a", 20)
         print "Moved to Acts Tab"
         #Select the finish button to return to the Main List View
-        driver.find_element_by_link_text("Finish").click()
+        driver.find_element_by_xpath("//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a").click()
+        function_module.wait_for_element_CSS(driver, "i.fa.fa-power-off", 20)
         function_module.log_to_file('Test_VFL_Module:test001_add_new_VFL_record_test_details:Successfully saved new VFL record')
         print "Successfully saved VFL Record and returned to list view"
         #Log out of the application
         driver.find_element_by_css_selector("i.fa.fa-power-off").click()
+        function_module.wait_for_element_ID(driver, "bot2-Msg1")
         driver.find_element_by_id("bot2-Msg1").click()
         function_module.log_to_file('Test_VFL_Module:test001_add_new_VFL_record_test_details:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test001_add_new_VFL_record_test_details:TEST COMPLETED"
@@ -197,6 +209,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
+        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
         driver.find_element_by_name("UserName").clear()
         driver.find_element_by_name("UserName").send_keys(client_variables.username1)
         driver.find_element_by_name("Password").clear()
@@ -204,40 +217,43 @@ class Test_001_VFL_Forms(unittest.TestCase):
         driver.find_element_by_css_selector("button.btn.btn-primary").click()
         function_module.log_to_file('Test_VFL_Module:test002_edit_existing_vfl_record:Successfully logged in and started test')
         print "Logged in successfully"
-        """
         #Select the VFL Module
+        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
-        time.sleep(5)
         print "Moved to VFL Module"
-        """
         #Edit the latest VFL Record
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60)
         driver.find_element_by_xpath("//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i").click()
         print "Found Edit VFL button for latest VFL Record"
         #Change value of Comments field
+        function_module.wait_for_element_ID(driver, "Comments")
         driver.find_element_by_id("Comments").clear()
         driver.find_element_by_id("Comments").send_keys("testing automated VFL creation - EDITED")
-        time.sleep(1)
         print "Successfullt edited Comments field"
         #Move successfully to the next tab
         driver.find_element_by_id("btnNextSubmit").click()
-        time.sleep(1)
+        function_module.wait_for_element_XPATH(driver, "//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a", 20)
         print "Moved to Acts Tab"
         #Select the finish button to return to the Main List View
-        driver.find_element_by_link_text("Finish").click()
+        driver.find_element_by_xpath("//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a").click()
+        function_module.wait_for_element_CSS(driver, "i.fa.fa-power-off", 20)
         print "Successfully saved VFL Record and returned to list view"
         #Assert that the changes to the VFL record have been saved
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[7]", 20)
         changes_saved = driver.find_element_by_xpath("//*[@id='dtVFL']/tbody/tr[1]/td[7]").text
         try:
             assert changes_saved == "testing automated VFL creation - EDITED"
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test002_edit_existing_vfl_record:Changes made to VFL record were not saved successfully', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Changes to VFL Record have not been saved successfully'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test002', 'Test failed to assert that changes made to the VFL Record were saved as expected', 'AssertionError')
         else:
             function_module.log_to_file('Test_VFL_Module:test002_edit_existing_vfl_record:Changes made to VFL record were saved successfully', 'PASSED')
             print 'Asserted that VFL record was edited and saved'
         #Log out of the application
         driver.find_element_by_css_selector("i.fa.fa-power-off").click()
+        function_module.wait_for_element_ID(driver, "bot2-Msg1")
         driver.find_element_by_id("bot2-Msg1").click()
         function_module.log_to_file('Test_VFL_Module:test002_edit_existing_vfl_record:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test002_edit_existing_vfl_record:TEST COMPLETED"
@@ -249,6 +265,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
+        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
         driver.find_element_by_name("UserName").clear()
         driver.find_element_by_name("UserName").send_keys(client_variables.username1)
         driver.find_element_by_name("Password").clear()
@@ -256,18 +273,18 @@ class Test_001_VFL_Forms(unittest.TestCase):
         driver.find_element_by_css_selector("button.btn.btn-primary").click()
         function_module.log_to_file('Test_VFL_Module:test003_add_edit_delete_safe_acts:Successfully logged in and started test')
         print "Logged in successfully"
-        """
         #Select the VFL Module
+        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
-        time.sleep(5)
         print "Moved to VFL Module"
-        """
         #Choose to edit existing VFL Record
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60)
         driver.find_element_by_xpath("//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i").click()
         print "Found Edit VFL button for latest VFL Record"
         #Move successfully to the next tab
         driver.find_element_by_id("btnNextSubmit").click()
-        time.sleep(1)
+        function_module.wait_for_element_XPATH(driver, "//*[@id='formActs']/div/section[1]/div/label[1]/i")
         print "Moved to Acts Tab"
         #Add a Safe Act of type 1
         driver.find_element_by_xpath("//*[@id='formActs']/div/section[1]/div/label[1]/i").click()
@@ -284,7 +301,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test003_add_edit_delete_safe_acts:User can select the same Safe Act Twice', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Was able to add to Safe Acts of the same type (1)'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test003', 'After adding a Safe Act, the test was still able to select the same Act Type when adding another Safe Act', 'AssertionError')
         else:
             function_module.log_to_file('Test_VFL_Module:test003_add_edit_delete_safe_acts:Successfully asserted Safe Act type 1 cannot be added twice (1)', 'PASSED')
             print 'Asserted that Safe Acts of the same type cannot be added twice (1)'
@@ -304,13 +321,14 @@ class Test_001_VFL_Forms(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test003_add_edit_delete_safe_acts:User can select the same Safe Act twice', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Was able to add to Safe Acts of the same type (2)'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test003', 'After editing the new Safe Act, the test was still able to select the same Act Type when adding another Safe Act', 'AssertionError')
         else:
             function_module.log_to_file('Test_VFL_Module:test003_add_edit_delete_safe_acts:Successfully asserted Safe Act type 2 cannot be added twice (2)', 'PASSED')
             print 'Asserted that Safe Acts of the same type cannot be added twice (2)'
         time.sleep(2)
         #Delete Safe Act
         driver.find_element_by_css_selector("i.glyphicon.glyphicon-trash").click()
+        function_module.wait_for_element_XPATH(driver, "//*[@id='bot2-Msg1']")
         driver.find_element_by_xpath("//*[@id='bot2-Msg1']").click()
         time.sleep(2)
         #Verify Act was deleted by confirming that the edit Act button is not present
@@ -323,15 +341,17 @@ class Test_001_VFL_Forms(unittest.TestCase):
         else:
             function_module.log_to_file('Test_VFL_Module:test003_add_edit_delete_safe_acts:Failed to delete Safe Act', 'FAILED') 
             print 'ERROR WARNING - Failed to Delete Act'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test003', 'Test failed to verify that the Safe Act was successfully deleted', 'NoSuchElementException')
             return False
         self.driver.implicitly_wait(30)
         print "Successfully deleted Safe Act"
         #Select the finish button to return to the Main List View
-        driver.find_element_by_link_text("Finish").click()
+        driver.find_element_by_xpath("//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a").click()
+        function_module.wait_for_element_CSS(driver, "i.fa.fa-power-off", 20)
         print "Successfully saved VFL Record and returned to list view"
         #Log out of the application
         driver.find_element_by_css_selector("i.fa.fa-power-off").click()
+        function_module.wait_for_element_ID(driver, "bot2-Msg1", 20)
         driver.find_element_by_id("bot2-Msg1").click()
         function_module.log_to_file('Test_VFL_Module:test003_add_edit_delete_safe_acts:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test003_add_edit_delete_safe_acts:TEST COMPLETED"
@@ -343,6 +363,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
+        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
         driver.find_element_by_name("UserName").clear()
         driver.find_element_by_name("UserName").send_keys(client_variables.username1)
         driver.find_element_by_name("Password").clear()
@@ -350,18 +371,18 @@ class Test_001_VFL_Forms(unittest.TestCase):
         driver.find_element_by_css_selector("button.btn.btn-primary").click()
         function_module.log_to_file('Test_VFL_Module:test004_add_edit_unsafe_acts:Successfully logged in and started test')
         print "Logged in successfully"
-        """
         #Select the VFL Module
+        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8    
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
-        time.sleep(5)
         print "Moved to VFL Module"
-        """
         #Choose to edit existing VFL Record
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60)
         driver.find_element_by_xpath("//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i").click()
         print "Found Edit VFL button for latest VFL Record"
         #Move successfully to the next tab
         driver.find_element_by_id("btnNextSubmit").click()
-        time.sleep(1)
+        function_module.wait_for_element_XPATH(driver, "//*[@id='formActs']/div/section[1]/div/label[2]/i")
         print "Moved to Acts Tab"
         #Add an Unsafe Act of type 1
         driver.find_element_by_xpath("//*[@id='formActs']/div/section[1]/div/label[2]/i").click()
@@ -378,7 +399,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test004_add_edit_unsafe_acts:User can select the same Unsafe Act Twice', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Was able to add to Unsafe Acts of the same type (1)'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test004', 'After adding an Unsafe Act, the test was still able to select the same Act Type when adding another Unsafe Act', 'AssertionError')
         else:
             function_module.log_to_file('Test_VFL_Module:test004_add_edit_unsafe_acts:Successfully asserted Unsafe Act type 1 cannot be added twice (1)', 'PASSED')
             print 'Asserted that Unsafe Acts of the same type cannot be added twice (1)'
@@ -398,16 +419,18 @@ class Test_001_VFL_Forms(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test004_add_edit_unsafe_acts:User can select the same Unsafe Act Twice', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Was able to add to Unsafe Acts of the same type (2)'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test004', 'After editing the new Unsafe Act, the test was still able to select the same Act Type when adding another Unsafe Act', 'AssertionError')
         else:
             function_module.log_to_file('Test_VFL_Module:test004_add_edit_unsafe_acts:Successfully asserted Unsafe Act type 2 cannot be added twice (2)', 'PASSED')
             print 'Asserted that Unsafe Acts of the same type cannot be added twice (2)'
         time.sleep(2)
         #Select the finish button to return to the Main List View
-        driver.find_element_by_link_text("Finish").click()
+        driver.find_element_by_xpath("//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a").click()
+        function_module.wait_for_element_CSS(driver, "i.fa.fa-power-off", 20)
         print "Successfully saved VFL Record and returned to list view"
         #Log out of the application
         driver.find_element_by_css_selector("i.fa.fa-power-off").click()
+        function_module.wait_for_element_ID(driver, "bot2-Msg1", 20)
         driver.find_element_by_id("bot2-Msg1").click()
         function_module.log_to_file('Test_VFL_Module:test004_add_edit_unsafe_acts:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test004_add_edit_unsafe_acts:TEST COMPLETED"
@@ -417,6 +440,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
+        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
         driver.find_element_by_name("UserName").clear()
         driver.find_element_by_name("UserName").send_keys(client_variables.username1)
         driver.find_element_by_name("Password").clear()
@@ -424,26 +448,25 @@ class Test_001_VFL_Forms(unittest.TestCase):
         driver.find_element_by_css_selector("button.btn.btn-primary").click()
         function_module.log_to_file('Test_VFL_Module:test005_add_conversations:Successfully logged in and started test')
         print "Logged in successfully"
-        """
         #Select the VFL Module
+        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
-        time.sleep(5)
         print "Moved to VFL Module"
-        """
         #Choose to edit existing VFL Record
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60)
         driver.find_element_by_xpath("//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i").click()
         print "Found Edit VFL button for latest VFL Record"
         #Move successfully to the next tab
         driver.find_element_by_id("btnNextSubmit").click()
-        time.sleep(1)
+        function_module.wait_for_element_CSS(driver, "i.fa.fa-comment-o.glyphicon-size")
         print "Moved to Acts Tab"
         #Add a Conversation & assert that Comment field is mandatory
         driver.find_element_by_css_selector("i.fa.fa-comment-o.glyphicon-size").click()
-        time.sleep(1)
+        function_module.wait_for_element_ID(driver, "Comment")
         elem = driver.find_element_by_id("Comment")
         comment_mandatory = elem.get_attribute("aria-required")
         function_module.field_is_mandatory(comment_mandatory)
-        time.sleep(1)
         print "Verified that Conversation Comment field is mandatory"
         driver.find_element_by_id("Comment").click()
         driver.find_element_by_id("Comment").clear()
@@ -457,17 +480,19 @@ class Test_001_VFL_Forms(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test005_add_conversations:Failed to add a conversation to an existing act', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Conversation has not been added correctly'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test005', 'Test could not successfully verify that the Conversation was added as expected', 'AssertionError')
             return False
         else:
             function_module.log_to_file('Test_VFL_Module:test005_add_conversations:Successfully asserted conversation was added', 'PASSED')
             print 'Asserted Conversation has been successfully added'
         time.sleep(1)
         #Select the finish button to return to the Main List View
-        driver.find_element_by_link_text("Finish").click()
+        driver.find_element_by_xpath("//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a").click()
+        function_module.wait_for_element_CSS(driver, "i.fa.fa-power-off", 20)
         print "Successfully saved VFL Record and returned to list view"
         #Log out of the application
         driver.find_element_by_css_selector("i.fa.fa-power-off").click()
+        function_module.wait_for_element_ID(driver, "bot2-Msg1", 20)
         driver.find_element_by_id("bot2-Msg1").click()
         function_module.log_to_file('Test_VFL_Module:test005_add_conversations:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test005_add_conversations:TEST COMPLETED"
@@ -478,6 +503,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
+        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
         driver.find_element_by_name("UserName").clear()
         driver.find_element_by_name("UserName").send_keys(client_variables.username1)
         driver.find_element_by_name("Password").clear()
@@ -485,29 +511,42 @@ class Test_001_VFL_Forms(unittest.TestCase):
         driver.find_element_by_css_selector("button.btn.btn-primary").click()
         function_module.log_to_file('Test_VFL_Module:test006_edit_conversations:Successfully logged in and started test')
         print "Logged in successfully"
-        """
         #Select the VFL Module
+        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
-        time.sleep(5)
         print "Moved to VFL Module"
-        """
         #Choose to edit existing VFL Record
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60)
         driver.find_element_by_xpath("//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i").click()
         print "Found Edit VFL button for latest VFL Record"
         #Move successfully to the next tab
         driver.find_element_by_id("btnNextSubmit").click()
-        time.sleep(1)
+        function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-angle-down")
         print "Moved to Acts Tab"
         #Edit the Conversation & attach an Image
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-angle-down").click()
-        time.sleep(1)
+        function_module.wait_for_element_CSS(driver, "i.fa.fa-pencil")
         driver.find_element_by_css_selector("i.fa.fa-pencil").click()
+        function_module.wait_for_element_ID(driver, "Comment")
         driver.find_element_by_id("Comment").click()
         driver.find_element_by_id("Comment").clear()
         driver.find_element_by_id("Comment").send_keys("Testing adding conversations - EDITED")
         driver.find_element_by_xpath("//*[@id='btnAdd_Files']/input[@type='file']").send_keys("V:\QA\Automation\Automation_Resources\Attachments\Conversation Image\PM5544_with_non-PAL_signals.png")
-        time.sleep(5)  
-        driver.find_element_by_id("update_modalConversation").click()
+        """
+        NEED TO RETURN TO THIS ISSUE - TRIED VARIOUS APPROACHES TO EXPLICITY WAIT TILL IMAGE IS FULLY UPLOADED, BUT SO FAR NONE WORKED
+        
+        #function_module.wait_to_be_clickable_XPATH(driver, "//*[@id='update_modalConversation']", 60)
+        #driver.find_element_by_xpath("//*[@id='update_modalConversation']").click()
+
+        #element = WebDriverWait(driver, 60).until((EC.element_to_be_clickable(By.XPATH, "//*[@id='update_modalConversation']")))
+        #element.click()
+
+        #function_module.wait_for_element_XPATH(driver, "//*[@id='templateUploaded_Files']/div[1]/button", 60)
+        #function_module.wait_for_element_CSS(driver, ".ingPreview", 30)
+        """
+        time.sleep(6)
+        driver.find_element_by_xpath("//*[@id='update_modalConversation']").click()
         time.sleep(1)
         print "Attached image file to conversation correctly"
         #Assert that Conversation has been edited correctly
@@ -517,16 +556,18 @@ class Test_001_VFL_Forms(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test006_edit_conversations:Failed to edit an existing conversation', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Conversation has not been edited correctly'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test006', 'Test could not successfully verify that the Conversation was edited as expected', 'AssertionError')
         else:
             function_module.log_to_file('Test_VFL_Module:test006_edit_conversations:Successfully edited an existing conversation and attached an image', 'PASSED')
             print 'Asserted Conversation has been successfully edited'
         time.sleep(1)
         #Select the finish button to return to the Main List View
-        driver.find_element_by_link_text("Finish").click()
+        driver.find_element_by_xpath("//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a").click()
+        function_module.wait_for_element_CSS(driver, "i.fa.fa-power-off", 20)
         print "Successfully saved VFL Record and returned to list view"
         #Log out of the application
         driver.find_element_by_css_selector("i.fa.fa-power-off").click()
+        function_module.wait_for_element_ID(driver, "bot2-Msg1", 20)
         driver.find_element_by_id("bot2-Msg1").click()
         function_module.log_to_file('Test_VFL_Module:test006_edit_conversations:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test006_edit_conversations:TEST COMPLETED"
@@ -534,8 +575,10 @@ class Test_001_VFL_Forms(unittest.TestCase):
     def test_007_delete_conversations(self):
         """Test to ensure that existing conversations can be successfully deleted"""
         driver = self.driver
+        self.driver.implicitly_wait(5)
         driver.get(self.base_url + "/")
         #Login to the application
+        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
         driver.find_element_by_name("UserName").clear()
         driver.find_element_by_name("UserName").send_keys(client_variables.username1)
         driver.find_element_by_name("Password").clear()
@@ -543,27 +586,28 @@ class Test_001_VFL_Forms(unittest.TestCase):
         driver.find_element_by_css_selector("button.btn.btn-primary").click()
         function_module.log_to_file('Test_VFL_Module:test007_delete_conversations:Successfully logged in and started test')
         print "Logged in successfully"
-        """
         #Select the VFL Module
+        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
-        time.sleep(5)
         print "Moved to VFL Module"
-        """
         #Choose to edit existing VFL Record
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60)
         driver.find_element_by_xpath("//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i").click()
         print "Found Edit VFL button for latest VFL Record"
         #Move successfully to the next tab
         driver.find_element_by_id("btnNextSubmit").click()
-        time.sleep(1)
+        function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-angle-down")
         print "Moved to Acts Tab"
         #Delete the Conversation
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-angle-down").click()
-        time.sleep(1)
+        function_module.wait_for_element_CSS(driver, "i.fa.fa-times")
         driver.find_element_by_css_selector("i.fa.fa-times").click()
+        function_module.wait_for_element_XPATH(driver, "//*[@id='bot2-Msg1']")
         driver.find_element_by_xpath("//*[@id='bot2-Msg1']").click()
         time.sleep(2)
         #Verify Conversation was deleted by confirming that the edit conversation button is not present
-        self.driver.implicitly_wait(0)
+        #self.driver.implicitly_wait(0)
         try:
             driver.find_element_by_css_selector("i.fa.fa-pencil")
         except NoSuchElementException:
@@ -572,14 +616,16 @@ class Test_001_VFL_Forms(unittest.TestCase):
         else:
             function_module.log_to_file('Test_VFL_Module:test007_delete_conversations:Failed to delete conversation', 'FAILED') 
             print 'ERROR WARNING - Failed to Delete Conversation'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test007', 'Test could not successfully verify that the Conversation was deleted as expected', 'NoSuchElementException')
             return False
-        self.driver.implicitly_wait(30)
+        #self.driver.implicitly_wait(30)
         #Select the finish button to return to the Main List View
-        driver.find_element_by_link_text("Finish").click()
+        driver.find_element_by_xpath("//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a").click()
+        function_module.wait_for_element_CSS(driver, "i.fa.fa-power-off", 20)
         print "Successfully saved VFL Record and returned to list view"
         #Log out of the application
         driver.find_element_by_css_selector("i.fa.fa-power-off").click()
+        function_module.wait_for_element_ID(driver, "bot2-Msg1", 20)
         driver.find_element_by_id("bot2-Msg1").click()
         function_module.log_to_file('Test_VFL_Module:test007_delete_conversations:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test007_delete_conversations:TEST COMPLETED"
@@ -592,6 +638,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
+        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
         driver.find_element_by_name("UserName").clear()
         driver.find_element_by_name("UserName").send_keys(client_variables.username1)
         driver.find_element_by_name("Password").clear()
@@ -599,22 +646,22 @@ class Test_001_VFL_Forms(unittest.TestCase):
         driver.find_element_by_css_selector("button.btn.btn-primary").click()
         function_module.log_to_file('Test_VFL_Module:test008_add_action:Successfully logged in and started test')
         print "Logged in successfully"
-        """
         #Select the VFL Module
+        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
-        time.sleep(5)
         print "Moved to VFL Module"
-        """
         #Choose to edit existing VFL Record
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60)
         driver.find_element_by_xpath("//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i").click()
         print "Found Edit VFL button for latest VFL Record"
         #Move successfully to the next tab
         driver.find_element_by_id("btnNextSubmit").click()
-        time.sleep(1)
+        function_module.wait_for_element_CSS(driver, "i.fa.fa-file-text-o.glyphicon-size")
         print "Moved to Acts Tab"
         #Add an Action
         driver.find_element_by_css_selector("i.fa.fa-file-text-o.glyphicon-size").click()
-        time.sleep(1)
+        function_module.wait_for_element_XPATH(driver, "//*[@id='DueDate']")
         print "Found Add Action button"
         #Verify DueDate is mandatory
         elem = driver.find_element_by_xpath("//*[@id='DueDate']")
@@ -641,7 +688,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test008_add_action:Actions AssignedBy field is not automatically populated with current user', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Actions AssignedBy field was not automatically populated with current user'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test008', 'When creating a new VFL Action, the AssignedBy field was not populated with the current user by default', 'AssertionError')
             user_assigned = False
         else:
             function_module.log_to_file('Test_VFL_Module:test008_add_action:Actions AssignedBy field was automatically populated with current user', 'PASSED')
@@ -669,7 +716,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test008_add_action:Actions Status is NOT "Not Started" by default', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Actions Status is NOT "Not Started" by default'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test008', 'When creating a new VFL Action, the Status field was not set to "Not Started" by default', 'AssertionError')
         else:
             function_module.log_to_file('Test_VFL_Module:test008_add_action:Actions Status is "Not Started" by default', 'PASSED')
             print 'Asserted that Actions Status is "Not Started" by default'
@@ -695,10 +742,22 @@ class Test_001_VFL_Forms(unittest.TestCase):
         driver.find_element_by_xpath("//*[@id='s2id_autogen1']").send_keys(Keys.RETURN)
         time.sleep(1)
         function_module.log_to_file('Test_VFL_Module:test008_add_action:Successfully selected user2 as Actions AssignedTo user', 'PASSED')
-        print "Successfully found as selected an AssignedTo user"
+        print "Successfully found and selected an AssignedTo user"
+        #Assert AssignedTo user added successfully
+        assigned_to_user = driver.find_element_by_xpath(".//*[@id='s2id_AssignedTo']/ul/li[1]/div").text
+        try:
+            assert assigned_to_user == client_variables.fullname2
+        except AssertionError:
+            function_module.log_to_file('Test_VFL_Module:test008_add_action:AssinedTo user was NOT added successfully', 'FAILED')
+            print 'ERROR - ASSERTION EXCEPTION - AssinedTo user was NOT added successfully'
+            email_module.error_mail('VFL Test008', 'When creating a new VFL Action, the test failed to successfully assigned a user to the AssignedTo field', 'AssertionError')
+        else:
+            function_module.log_to_file('Test_VFL_Module:test008_add_action:AssinedTo user was added successfully', 'PASSED')
+            print 'Asserted that AssinedTo user was added successfully'
+        time.sleep(1)
         #Save the Action
         driver.find_element_by_xpath("//*[@id='submit_modalAction']").click()
-        time.sleep(5)
+        function_module.wait_for_element_XPATH(driver, "//*[@class='col col-6']/label[1]")
         #Assert that Action has been added correctly
         elem = driver.find_element_by_xpath("//*[@class='col col-6']/label[1]").text
         try:
@@ -706,20 +765,26 @@ class Test_001_VFL_Forms(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test008_add_action:Failed to add a action to an existing act', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Action has not been added correctly'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test008', 'When creating a new VFL Action, the test failed to verify that the Action was saved correctly within the VFL Module', 'AssertionError')
             return False
         else:
             function_module.log_to_file('Test_VFL_Module:test008_add_action:Successfully asserted action was added', 'PASSED')
             print 'Asserted Action has been successfully added'
         time.sleep(1)
-        
-        #Research & Add SQL Based Assertions to check that Action has been added correctly. Alternatively, check Actions presence in Action Module
-        
+        """
+        ADDTIONAL WORK REQUIRED;
+
+        WHEN ACTIONS MODULE READY - After adding a VFL Action, this test should then confirm that the Action has synced with the Action module correctly
+
+        POSSIBLY CHECK DATABASE - Research & Add SQL Based Assertions to check that Action has been added correctly. 
+        """
         #Select the finish button to return to the Main List View
-        driver.find_element_by_link_text("Finish").click()
+        driver.find_element_by_xpath("//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a").click()
+        function_module.wait_for_element_CSS(driver, "i.fa.fa-power-off", 20)
         print "Successfully saved VFL Record and returned to list view"
         #Log out of the application
         driver.find_element_by_css_selector("i.fa.fa-power-off").click()
+        function_module.wait_for_element_ID(driver, "bot2-Msg1", 20)
         driver.find_element_by_id("bot2-Msg1").click()
         function_module.log_to_file('Test_VFL_Module:test008_add_action:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test008_add_action:TEST COMPLETED"
@@ -729,6 +794,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
+        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
         driver.find_element_by_name("UserName").clear()
         driver.find_element_by_name("UserName").send_keys(client_variables.username1)
         driver.find_element_by_name("Password").clear()
@@ -736,24 +802,24 @@ class Test_001_VFL_Forms(unittest.TestCase):
         driver.find_element_by_css_selector("button.btn.btn-primary").click()
         function_module.log_to_file('Test_VFL_Module:test009_edit_action:Successfully logged in and started test')
         print "Logged in successfully"
-        """
         #Select the VFL Module
+        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
-        time.sleep(5)
         print "Moved to VFL Module"
-        """
         #Choose to edit existing VFL Record
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 20)
         driver.find_element_by_xpath("//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i").click()
         print "Found Edit VFL button for latest VFL Record"
         #Move successfully to the next tab
         driver.find_element_by_id("btnNextSubmit").click()
-        time.sleep(1)
+        function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-angle-down")
         print "Moved to Acts Tab"
         #Edit an Action
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-angle-down").click()
-        time.sleep(1)
+        function_module.wait_for_element_CSS(driver, "i.fa.fa-pencil")
         driver.find_element_by_css_selector("i.fa.fa-pencil").click()
-        time.sleep(1)
+        function_module.wait_for_element_XPATH(driver, "//*[@id='Priority']")
         print "Found Edit Action button successfully"
         #Change Priority
         Select(driver.find_element_by_xpath("//*[@id='Priority']")).select_by_visible_text("High")
@@ -766,25 +832,27 @@ class Test_001_VFL_Forms(unittest.TestCase):
         print "Edited Actions Description"
         #Save the Action
         driver.find_element_by_xpath("//*[@id='update_modalAction']").click()
-        time.sleep(5)
-        #Assert that Action has been added correctly
+        time.sleep(3)
+        #Assert that Action has been edited correctly
         elem = driver.find_element_by_xpath("//*[@class='col col-6']/label[1]").text
         try:
             assert elem == 'testing automated VFL Corrective Actions - EDITED'
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test009_edit_action:Failed to save changes to Action correctly', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Failed to save changes to Action correctly'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test009', 'Test failed to verify that the VFL Action was edited as expected', 'AssertionError')
             return False
         else:
             function_module.log_to_file('Test_VFL_Module:test009_edit_action:Successfully saved changes Action', 'PASSED')
             print 'Asserted that changes to Action have been saved correctly'
         time.sleep(1)
         #Select the finish button to return to the Main List View
-        driver.find_element_by_link_text("Finish").click()
+        driver.find_element_by_xpath("//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a").click()
+        function_module.wait_for_element_CSS(driver, "i.fa.fa-power-off", 20)
         print "Successfully saved VFL Record and returned to list view"
         #Log out of the application
         driver.find_element_by_css_selector("i.fa.fa-power-off").click()
+        function_module.wait_for_element_ID(driver, "bot2-Msg1", 20)
         driver.find_element_by_id("bot2-Msg1").click()
         function_module.log_to_file('Test_VFL_Module:test009_edit_action:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test009_edit_action:TEST COMPLETED"
@@ -794,6 +862,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
+        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
         driver.find_element_by_name("UserName").clear()
         driver.find_element_by_name("UserName").send_keys(client_variables.username1)
         driver.find_element_by_name("Password").clear()
@@ -801,25 +870,26 @@ class Test_001_VFL_Forms(unittest.TestCase):
         driver.find_element_by_css_selector("button.btn.btn-primary").click()
         function_module.log_to_file('Test_VFL_Module:test010_delete_action:Successfully logged in and started test')
         print "Logged in successfully"
-        """
         #Select the VFL Module
+        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
-        time.sleep(5)
         print "Moved to VFL Module"
-        """
         #Choose to edit existing VFL Record
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60)
         driver.find_element_by_xpath("//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i").click()
         print "Found Edit VFL button for latest VFL Record"
         #Move successfully to the next tab
         driver.find_element_by_id("btnNextSubmit").click()
-        time.sleep(1)
+        function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-angle-down")
         print "Moved to Acts Tab"
         #Delete an Action
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-angle-down").click()
-        time.sleep(1)
+        function_module.wait_for_element_CSS(driver, "i.fa.fa-times")
         driver.find_element_by_css_selector("i.fa.fa-times").click()
+        function_module.wait_for_element_XPATH(driver, "//*[@id='bot2-Msg1']")
         driver.find_element_by_xpath("//*[@id='bot2-Msg1']").click()
-        time.sleep(1)
+        time.sleep(2)
         #Verify Action was deleted by confirming that the edit Action button is not present
         self.driver.implicitly_wait(0)
         try:
@@ -830,14 +900,16 @@ class Test_001_VFL_Forms(unittest.TestCase):
         else:
             function_module.log_to_file('Test_VFL_Module:test010_delete_action:Failed to delete Action', 'FAILED') 
             print 'ERROR WARNING - Failed to verify Action was deleted'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test010', 'Test failed to verify that the VFL Action was deleted as expected', 'NoSuchElementException')
             return False
         self.driver.implicitly_wait(30)
         #Select the finish button to return to the Main List View
-        driver.find_element_by_link_text("Finish").click()
+        driver.find_element_by_xpath("//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a").click()
+        function_module.wait_for_element_CSS(driver, "i.fa.fa-power-off", 20)
         print "Successfully saved VFL Record and returned to list view"
         #Log out of the application
         driver.find_element_by_css_selector("i.fa.fa-power-off").click()
+        function_module.wait_for_element_ID(driver, "bot2-Msg1", 20)
         driver.find_element_by_id("bot2-Msg1").click()
         function_module.log_to_file('Test_VFL_Module:test010_delete_action:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test010_delete_action:TEST COMPLETED"
@@ -850,6 +922,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
+        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
         driver.find_element_by_name("UserName").clear()
         driver.find_element_by_name("UserName").send_keys(client_variables.username1)
         driver.find_element_by_name("Password").clear()
@@ -857,14 +930,13 @@ class Test_001_VFL_Forms(unittest.TestCase):
         driver.find_element_by_css_selector("button.btn.btn-primary").click()
         function_module.log_to_file('Test_VFL_Module:test011_view_existing_vfl_record:Successfully logged in and started test')
         print "Logged in successfully"
-        """
         #Select the VFL Module
+        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
-        time.sleep(5)
         print "Moved to VFL Module"
-        """
         #View the latest VFL Record (READ-ONLY)
-        #driver.find_element_by_css_selector("i.glyphicon.glyphicon-eye-open").click()
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[1]/i", 60)
         driver.find_element_by_xpath("//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[1]/i").click()
         print "Found View VFL button for latest VFL Record"
         #Verify that VflDate field is currently readonly/disabled
@@ -910,7 +982,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         print "Verified that all fields on the VFL Details tab are set to read only when in View Mode"
         #Move successfully to the next tab
         driver.find_element_by_id("btnNextSubmit").click()
-        time.sleep(1)
+        function_module.wait_for_element_XPATH(driver, "//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a", 20)
         print "Moved to Acts Tab"
         #Verify that Safe Acts radio button is not present on page
         self.driver.implicitly_wait(0)
@@ -985,10 +1057,12 @@ class Test_001_VFL_Forms(unittest.TestCase):
             #Send Potential Error email
         self.driver.implicitly_wait(30)
         #Select the finish button to return to the Main List View
-        driver.find_element_by_link_text("Finish").click()
+        driver.find_element_by_xpath("//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a").click()
+        function_module.wait_for_element_CSS(driver, "i.fa.fa-power-off", 20)
         print "Successfully saved VFL Record and returned to list view"
         #Log out of the application
         driver.find_element_by_css_selector("i.fa.fa-power-off").click()
+        function_module.wait_for_element_ID(driver, "bot2-Msg1", 20)
         driver.find_element_by_id("bot2-Msg1").click()
         function_module.log_to_file('Test_VFL_Module:test011_view_existing_vfl_record:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test011_view_existing_vfl_record:TEST COMPLETED"
@@ -998,6 +1072,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
+        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
         driver.find_element_by_name("UserName").clear()
         driver.find_element_by_name("UserName").send_keys(client_variables.username1)
         driver.find_element_by_name("Password").clear()
@@ -1005,14 +1080,15 @@ class Test_001_VFL_Forms(unittest.TestCase):
         driver.find_element_by_css_selector("button.btn.btn-primary").click()
         function_module.log_to_file('Test_VFL_Module:test012_delete_existing_vfl_record:Successfully logged in and started test')
         print "Logged in successfully"
-        """
         #Select the VFL Module
+        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
-        time.sleep(5)
         print "Moved to VFL Module"
-        """
         #Delete the latest VFL Record
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[3]/i", 60)
         driver.find_element_by_xpath("//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[3]/i").click()
+        function_module.wait_for_element_XPATH(driver, "//*[@id='bot2-Msg1']")
         driver.find_element_by_xpath("//*[@id='bot2-Msg1']").click()
         time.sleep(3)
         print "Successfully found the Delete VFL Record button"
@@ -1023,39 +1099,17 @@ class Test_001_VFL_Forms(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test012_delete_existing_vfl_record:Failed to delete VFL Record', 'FAILED')
             print 'ERROR ASSERTION EXCEPTION - Failed to delete VFL Record'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test012', 'Test failed to verify that all existing VFL records have been deleted as expected', 'AssertionError')
             return False
         else:
             function_module.log_to_file('Test_VFL_Module:test012_delete_existing_vfl_record:Successfully deleted VFL Record', 'PASSED')
             print 'Asserted that VFL Record has been successfully deleted'
         #Log out of the application
         driver.find_element_by_css_selector("i.fa.fa-power-off").click()
+        function_module.wait_for_element_ID(driver, "bot2-Msg1", 20)
         driver.find_element_by_id("bot2-Msg1").click()
         function_module.log_to_file('Test_VFL_Module:test012_delete_existing_vfl_record:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test012_delete_existing_vfl_record:TEST COMPLETED"
-    
-    """
-    def is_element_present(self, how, what):
-        try: self.driver.find_element(by=how, value=what)
-        except NoSuchElementException, e: return False
-        return True
-    
-    def is_alert_present(self):
-        try: self.driver.switch_to_alert()
-        except NoAlertPresentException, e: return False
-        return True
-    
-    def close_alert_and_get_its_text(self):
-        try:
-            alert = self.driver.switch_to_alert()
-            alert_text = alert.text
-            if self.accept_next_alert:
-                alert.accept()
-            else:
-                alert.dismiss()
-            return alert_text
-        finally: self.accept_next_alert = True
-    """
     
     def tearDown(self):
         """basic test tear down method"""
@@ -1080,6 +1134,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
+        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
         driver.find_element_by_name("UserName").clear()
         driver.find_element_by_name("UserName").send_keys(client_variables.username1)
         driver.find_element_by_name("Password").clear()
@@ -1087,19 +1142,17 @@ class Test_002_VFL_Main(unittest.TestCase):
         driver.find_element_by_css_selector("button.btn.btn-primary").click()
         function_module.log_to_file('Test_VFL_Module:test013_verify_default_filters:Successfully logged in and started test')
         print "Logged in successfully"
-        """
         #Select the VFL Module
+        function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
-        time.sleep(5)
         print "Moved to VFL Module"
-        """
         #Verify Filter Panel is hidden by default
         elem = driver.find_element_by_xpath("//*[@id='dtFilterFormContainerVfl']")
         filter_panel_hidden = elem.get_attribute("style")
         function_module.field_is_hidden(filter_panel_hidden)
         #Expand Filter Panel
         driver.find_element_by_xpath("//*[@id='dtFilterHeaderContainerVfl']/div/a[1]").click()
-        time.sleep(1)
+        function_module.wait_for_element_XPATH(driver, "//*[@id='s2id_CreatedBy']/ul/li[1]/div")
         #Verify Filter Panel is now displayed
         elem = driver.find_element_by_xpath("//*[@id='dtFilterFormContainerVfl']")
         filter_panel_active = elem.get_attribute("style")
@@ -1111,7 +1164,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test013_verify_default_filters:Creator field is not automatically populated with current user', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Creator field was not automatically populated with current user'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test013', 'When opening the VFL List View page, the Creator field was not populated with the current user by default', 'AssertionError')
             return False
         else:
             function_module.log_to_file('Test_VFL_Module:test013_verify_default_filters:Creator field was automatically populated with current user', 'PASSED')
@@ -1124,7 +1177,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test013_verify_default_filters:Participants field is not automatically populated with current user', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Participants field was not automatically populated with current user'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test013', 'When opening the VFL List View page, the Participants field was not populated with the current user by default', 'AssertionError')
             return False
         else:
             function_module.log_to_file('Test_VFL_Module:test013_verify_default_filters:Participants field was automatically populated with current user', 'PASSED')
@@ -1132,6 +1185,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         time.sleep(1)
         #Log out of the application
         driver.find_element_by_css_selector("i.fa.fa-power-off").click()
+        function_module.wait_for_element_ID(driver, "bot2-Msg1", 20)
         driver.find_element_by_id("bot2-Msg1").click()
         function_module.log_to_file('Test_VFL_Module:test013_verify_default_filters:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test013_verify_default_filters:TEST COMPLETED"
@@ -1144,6 +1198,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
+        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
         driver.find_element_by_name("UserName").clear()
         driver.find_element_by_name("UserName").send_keys(client_variables.username1)
         driver.find_element_by_name("Password").clear()
@@ -1151,18 +1206,18 @@ class Test_002_VFL_Main(unittest.TestCase):
         driver.find_element_by_css_selector("button.btn.btn-primary").click()
         function_module.log_to_file('Test_VFL_Module:test014_delete_multiple_VFL_records:Successfully logged in and started test')
         print "Logged in successfully"
-        """
         #Select the VFL Module
+        function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
-        time.sleep(5)
         print "Moved to VFL Module"
-        """
         #Add multiple VFL records for test
         for x in range(3):
             function_module.wait_for_element_CSS(driver, "i.glyphicon.glyphicon-plus", 20)
             driver.find_element_by_css_selector("i.glyphicon.glyphicon-plus").click()
             driver.find_element_by_id("VflDate").click()
-            driver.find_element_by_link_text("1").click()
+            driver.find_element_by_id("VflDate").send_keys(function_module.first_day_of_month())
+            driver.find_element_by_id("VflDate").send_keys(Keys.RETURN)
+            time.sleep(1)
             driver.find_element_by_id("s2id_autogen1").click()
             driver.find_element_by_id("s2id_autogen1").send_keys(client_variables.wg_default_false)
             time.sleep(1)
@@ -1186,8 +1241,8 @@ class Test_002_VFL_Main(unittest.TestCase):
             driver.find_element_by_css_selector("#TimeOut").send_keys("1:00")
             time.sleep(1)
             driver.find_element_by_id("btnNextSubmit").click()
-            time.sleep(3)
-            driver.find_element_by_link_text("Finish").click()
+            function_module.wait_for_element_XPATH(driver, "//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a")
+            driver.find_element_by_xpath("//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a").click()
             print "Added TEST 014 - Automated VFL#"+str(x)
         print "Total number of Test VFL Records now = 3"
         #Verifiy Multi-Delete button is diabled by default
@@ -1213,16 +1268,17 @@ class Test_002_VFL_Main(unittest.TestCase):
         while amount_of_records != '0 to 0 of 0 entries':
             function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/thead/tr/th[1]/input")
             driver.find_element_by_xpath("//*[@id='dtVFL']/thead/tr/th[1]/input").click()
-            time.sleep(3)
+            function_module.wait_for_element_XPATH(driver, "//*[@id='removeVfl']/i")
             driver.find_element_by_xpath("//*[@id='removeVfl']/i").click()
-            time.sleep(3)
+            function_module.wait_for_element_XPATH(driver, "//*[@id='bot2-Msg1']")
             driver.find_element_by_xpath("//*[@id='bot2-Msg1']").click()
             time.sleep(3)
             amount_of_records = driver.find_element_by_xpath("//*[@id='dtVFL_info']").text
             print amount_of_records
-        print "Total number of Test VFL Records now = 0"    
+        print "Total number of Test VFL Records now = 0"
         #Log out of the application
         driver.find_element_by_css_selector("i.fa.fa-power-off").click()
+        function_module.wait_for_element_ID(driver, "bot2-Msg1")
         driver.find_element_by_id("bot2-Msg1").click()
         function_module.log_to_file('Test_VFL_Module:test014_delete_multiple_VFL_records:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test014_delete_multiple_VFL_records:TEST COMPLETED"
@@ -1236,6 +1292,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
+        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
         driver.find_element_by_name("UserName").clear()
         driver.find_element_by_name("UserName").send_keys(client_variables.username1)
         driver.find_element_by_name("Password").clear()
@@ -1243,18 +1300,18 @@ class Test_002_VFL_Main(unittest.TestCase):
         driver.find_element_by_css_selector("button.btn.btn-primary").click()
         function_module.log_to_file('Test_VFL_Module:test015_filter_by_date_range:Successfully logged in and started test')
         print "Logged in successfully"
-        """
         #Select the VFL Module
+        function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
-        time.sleep(5)
         print "Moved to VFL Module"
-        """
         #Add multiple VFL records for test
         for x in range(3):
             function_module.wait_for_element_CSS(driver, "i.glyphicon.glyphicon-plus", 20)
             driver.find_element_by_css_selector("i.glyphicon.glyphicon-plus").click()
             driver.find_element_by_id("VflDate").click()
-            driver.find_element_by_link_text("1").click()
+            driver.find_element_by_id("VflDate").send_keys(function_module.first_day_of_month())
+            driver.find_element_by_id("VflDate").send_keys(Keys.RETURN)
+            time.sleep(1)
             driver.find_element_by_id("s2id_autogen1").click()
             driver.find_element_by_id("s2id_autogen1").send_keys(client_variables.wg_parent)
             time.sleep(1)
@@ -1278,13 +1335,13 @@ class Test_002_VFL_Main(unittest.TestCase):
             driver.find_element_by_css_selector("#TimeOut").send_keys("1:00")
             time.sleep(1)
             driver.find_element_by_id("btnNextSubmit").click()
-            time.sleep(3)
-            driver.find_element_by_link_text("Finish").click()
+            function_module.wait_for_element_XPATH(driver, "//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a")
+            driver.find_element_by_xpath("//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a").click()
             print "Added TEST 015 - Automated VFL#"+str(x)
         print "Total number of Test VFL Records now = 3"
         #Expand Filter Panel
         driver.find_element_by_xpath("//*[@id='dtFilterHeaderContainerVfl']/div/a[1]").click()
-        time.sleep(1)
+        function_module.wait_for_element_XPATH(driver, "//*[@id='CreatedOnFrom']")
         print "Expanded filter panel successfully"
         #Set From Date
         driver.find_element_by_xpath("//*[@id='CreatedOnFrom']").send_keys(function_module.first_day_of_month())
@@ -1298,7 +1355,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         print "Set To Date equals todays date"
         #Apply Filters
         driver.find_element_by_xpath("//*[@id='dtFilterFormContainerVfl']/div/div/div/a[2]").click()
-        time.sleep(3)
+        time.sleep(5)
         print "Have selected the Apply Filters button"
         #Verify expected amount of rows returned
         amount_of_records = driver.find_element_by_xpath("//*[@id='dtVFL_info']").text
@@ -1308,7 +1365,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test015_filter_by_date_range:Failed to successfully filter by Date Range', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Failed to successfully filter by Date Range'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test015', 'Test failed to verify that only the expected 3 VFL Records where returned when filtering by Date Range', 'AssertionError')
             return False
         else:
             function_module.log_to_file('Test_VFL_Module:test015_filter_by_date_range:Successfully filtered by Date Range', 'PASSED')
@@ -1316,6 +1373,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         time.sleep(1)
         #Log out of the application
         driver.find_element_by_css_selector("i.fa.fa-power-off").click()
+        function_module.wait_for_element_ID(driver, "bot2-Msg1")
         driver.find_element_by_id("bot2-Msg1").click()
         function_module.log_to_file('Test_VFL_Module:test015_filter_by_date_range:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test015_filter_by_date_range:TEST COMPLETED"
@@ -1330,6 +1388,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
+        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
         driver.find_element_by_name("UserName").clear()
         driver.find_element_by_name("UserName").send_keys(client_variables.username1)
         driver.find_element_by_name("Password").clear()
@@ -1337,18 +1396,19 @@ class Test_002_VFL_Main(unittest.TestCase):
         driver.find_element_by_css_selector("button.btn.btn-primary").click()
         function_module.log_to_file('Test_VFL_Module:test016_filter_by_workgroup_no_subgroups:Successfully logged in and started test')
         print "Logged in successfully"
-        """
         #Select the VFL Module
+        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
-        time.sleep(5)
         print "Moved to VFL Module"
-        """
         #Add multiple VFL records for test
         for x in range(3):
             function_module.wait_for_element_CSS(driver, "i.glyphicon.glyphicon-plus", 20)
             driver.find_element_by_css_selector("i.glyphicon.glyphicon-plus").click()
             driver.find_element_by_id("VflDate").click()
-            driver.find_element_by_link_text("1").click()
+            driver.find_element_by_id("VflDate").send_keys(function_module.first_day_of_month())
+            driver.find_element_by_id("VflDate").send_keys(Keys.RETURN)
+            time.sleep(1)
             driver.find_element_by_id("s2id_autogen1").click()
             driver.find_element_by_id("s2id_autogen1").send_keys(client_variables.wg_child)
             time.sleep(1)
@@ -1374,13 +1434,13 @@ class Test_002_VFL_Main(unittest.TestCase):
             driver.find_element_by_css_selector("#TimeOut").send_keys("1:00")
             time.sleep(1)
             driver.find_element_by_id("btnNextSubmit").click()
-            time.sleep(3)
-            driver.find_element_by_link_text("Finish").click()
+            function_module.wait_for_element_XPATH(driver, "//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a")
+            driver.find_element_by_xpath("//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a").click()
             print "Added TEST 016 - Automated VFL#"+str(x)
         print "Total number of Test VFL Records now = 6"
         #Expand Filter Panel
         driver.find_element_by_xpath("//*[@id='dtFilterHeaderContainerVfl']/div/a[1]").click()
-        time.sleep(1)
+        function_module.wait_for_element_XPATH(driver, "//*[@id='s2id_autogen3']")
         print "Expanded filter panel successfully"
         #Select a WorkGroup
         driver.find_element_by_xpath("//*[@id='s2id_autogen3']").click()
@@ -1396,7 +1456,8 @@ class Test_002_VFL_Main(unittest.TestCase):
         print "Disabled SubGroups checkbox"
         #Apply Filters
         driver.find_element_by_xpath("//*[@id='dtFilterFormContainerVfl']/div/div/div/a[2]").click()
-        time.sleep(3)
+        time.sleep(5)
+        #function_module.wait_for_element_XPATH(driver, "//*[@id='dtFilterHeaderContainerVfl']/div/a[2]")
         print "Have selected the Apply Filters button"
         #Assert expected amount of rows returned
         amount_of_records = driver.find_element_by_xpath("//*[@id='dtVFL_info']").text
@@ -1406,7 +1467,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test016_filter_by_workgroup_no_subgroups:Failed to successfully filter by WorkGroup (No SubGroup)', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Failed to successfully filter by WorkGroup (No SubGroup)'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test016', 'Test failed to verify that only the expected 3 VFL Records where returned when filtering by WorkGroup (No SubGroup)', 'AssertionError')
             return False
         else:
             function_module.log_to_file('Test_VFL_Module:test016_filter_by_workgroup_no_subgroups:Successfully filtered by WorkGroup (No SubGroup)', 'PASSED')
@@ -1414,6 +1475,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         time.sleep(1)
         #Log out of the application
         driver.find_element_by_css_selector("i.fa.fa-power-off").click()
+        function_module.wait_for_element_ID(driver, "bot2-Msg1")
         driver.find_element_by_id("bot2-Msg1").click()
         function_module.log_to_file('Test_VFL_Module:test016_filter_by_workgroup_no_subgroups:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test016_filter_by_workgroup_no_subgroups:TEST COMPLETED"
@@ -1425,6 +1487,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
+        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
         driver.find_element_by_name("UserName").clear()
         driver.find_element_by_name("UserName").send_keys(client_variables.username1)
         driver.find_element_by_name("Password").clear()
@@ -1432,15 +1495,14 @@ class Test_002_VFL_Main(unittest.TestCase):
         driver.find_element_by_css_selector("button.btn.btn-primary").click()
         function_module.log_to_file('Test_VFL_Module:test017_filter_by_workgroup_with_subgroups:Successfully logged in and started test')
         print "Logged in successfully"
-        """
         #Select the VFL Module
+        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
-        time.sleep(5)
         print "Moved to VFL Module"
-        """
         #Expand Filter Panel
         driver.find_element_by_xpath("//*[@id='dtFilterHeaderContainerVfl']/div/a[1]").click()
-        time.sleep(1)
+        function_module.wait_for_element_XPATH(driver, "//*[@id='s2id_autogen3']")
         print "Expanded filter panel successfully"
         #Select a WorkGroup
         driver.find_element_by_xpath("//*[@id='s2id_autogen3']").click()
@@ -1452,7 +1514,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         print "Parent WorkGroup selected with SubGroups checkbox left checked"
         #Apply Filters
         driver.find_element_by_xpath("//*[@id='dtFilterFormContainerVfl']/div/div/div/a[2]").click()
-        time.sleep(3)
+        time.sleep(5)
         print "Have selected the Apply Filters button"
         #Assert expected amount of rows returned
         amount_of_records = driver.find_element_by_xpath("//*[@id='dtVFL_info']").text
@@ -1462,7 +1524,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test017_filter_by_workgroup_with_subgroups:Failed to successfully filter by WorkGroup (With SubGroup)', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Failed to successfully filter by WorkGroup (With SubGroup)'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test017', 'Test failed to verify that only the expected 6 VFL Records where returned when filtering by WorkGroup (With SubGroup)', 'AssertionError')
             return False
         else:
             function_module.log_to_file('Test_VFL_Module:test017_filter_by_workgroup_with_subgroups:Successfully filtered by WorkGroup (With SubGroup)', 'PASSED')
@@ -1470,6 +1532,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         time.sleep(1)
         #Log out of the application
         driver.find_element_by_css_selector("i.fa.fa-power-off").click()
+        function_module.wait_for_element_ID(driver, "bot2-Msg1")
         driver.find_element_by_id("bot2-Msg1").click()
         function_module.log_to_file('Test_VFL_Module:test017_filter_by_workgroup_with_subgroups:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test017_filter_by_workgroup_with_subgroups:TEST COMPLETED"
@@ -1481,6 +1544,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
+        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
         driver.find_element_by_name("UserName").clear()
         driver.find_element_by_name("UserName").send_keys(client_variables.username1)
         driver.find_element_by_name("Password").clear()
@@ -1488,15 +1552,14 @@ class Test_002_VFL_Main(unittest.TestCase):
         driver.find_element_by_css_selector("button.btn.btn-primary").click()
         function_module.log_to_file('Test_VFL_Module:test018_filter_by_location:Successfully logged in and started test')
         print "Logged in successfully"
-        """
         #Select the VFL Module
+        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
-        time.sleep(5)
         print "Moved to VFL Module"
-        """
         #Expand Filter Panel
         driver.find_element_by_xpath("//*[@id='dtFilterHeaderContainerVfl']/div/a[1]").click()
-        time.sleep(1)
+        function_module.wait_for_element_XPATH(driver, "//*[@id='Location']")
         print "Expanded filter panel successfully"
         #Select Location
         Select(driver.find_element_by_xpath("//*[@id='Location']")).select_by_visible_text(client_variables.location1)
@@ -1504,7 +1567,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         print "Selected a value for Location filter"
         #Apply Filters
         driver.find_element_by_xpath("//*[@id='dtFilterFormContainerVfl']/div/div/div/a[2]").click()
-        time.sleep(3)
+        time.sleep(5)
         print "Have selected the Apply Filters button"
         #Assert expected amount of rows returned
         amount_of_records = driver.find_element_by_xpath("//*[@id='dtVFL_info']").text
@@ -1514,7 +1577,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test018_filter_by_location:Failed to successfully filter by Location', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Failed to successfully filter by Location'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test018', 'Test failed to verify that only the expected 3 VFL Records where returned when filtering by Location', 'AssertionError')
             return False
         else:
             function_module.log_to_file('Test_VFL_Module:test018_filter_by_location:Successfully filtered by Location', 'PASSED')
@@ -1522,6 +1585,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         time.sleep(1)
         #Log out of the application
         driver.find_element_by_css_selector("i.fa.fa-power-off").click()
+        function_module.wait_for_element_ID(driver, "bot2-Msg1")
         driver.find_element_by_id("bot2-Msg1").click()
         function_module.log_to_file('Test_VFL_Module:test018_filter_by_location:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test018_filter_by_location:TEST COMPLETED"
@@ -1533,6 +1597,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
+        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
         driver.find_element_by_name("UserName").clear()
         driver.find_element_by_name("UserName").send_keys(client_variables.username1)
         driver.find_element_by_name("Password").clear()
@@ -1540,15 +1605,14 @@ class Test_002_VFL_Main(unittest.TestCase):
         driver.find_element_by_css_selector("button.btn.btn-primary").click()
         function_module.log_to_file('Test_VFL_Module:test019_filter_by_business_unit:Successfully logged in and started test')
         print "Logged in successfully"
-        """
         #Select the VFL Module
+        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
-        time.sleep(5)
         print "Moved to VFL Module"
-        """
         #Expand Filter Panel
         driver.find_element_by_xpath("//*[@id='dtFilterHeaderContainerVfl']/div/a[1]").click()
-        time.sleep(1)
+        function_module.wait_for_element_XPATH(driver, "//*[@id='ProductLine']")
         print "Expanded filter panel successfully"
         #Select business unit
         Select(driver.find_element_by_xpath("//*[@id='ProductLine']")).select_by_visible_text(client_variables.bu2)
@@ -1556,7 +1620,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         print "Select a value from the Business Unit filter"
         #Apply Filters
         driver.find_element_by_xpath("//*[@id='dtFilterFormContainerVfl']/div/div/div/a[2]").click()
-        time.sleep(3)
+        time.sleep(5)
         print "Have selected the Apply Filters button"
         #Assert expected amount of rows returned
         amount_of_records = driver.find_element_by_xpath("//*[@id='dtVFL_info']").text
@@ -1566,7 +1630,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test019_filter_by_business_unit:Failed to successfully filter by Business Unit', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Failed to successfully filter by Business Unit'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test019', 'Test failed to verify that only the expected 3 VFL Records where returned when filtering by Business Unit', 'AssertionError')
             return False
         else:
             function_module.log_to_file('Test_VFL_Module:test019_filter_by_business_unit:Successfully filtered by Business Unit', 'PASSED')
@@ -1574,6 +1638,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         time.sleep(1)
         #Log out of the application
         driver.find_element_by_css_selector("i.fa.fa-power-off").click()
+        function_module.wait_for_element_ID(driver, "bot2-Msg1")
         driver.find_element_by_id("bot2-Msg1").click()
         function_module.log_to_file('Test_VFL_Module:test019_filter_by_business_unit:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test019_filter_by_business_unit:TEST COMPLETED"
@@ -1587,6 +1652,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
+        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
         driver.find_element_by_name("UserName").clear()
         driver.find_element_by_name("UserName").send_keys(client_variables.username2)
         driver.find_element_by_name("Password").clear()
@@ -1594,22 +1660,20 @@ class Test_002_VFL_Main(unittest.TestCase):
         driver.find_element_by_css_selector("button.btn.btn-primary").click()
         function_module.log_to_file('Test_VFL_Module:test020_filter_by_creator_or_participant:Successfully logged in (as User2) and started test')
         print "Logged in successfully"
-        """
         #Select the VFL Module
+        function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
-        time.sleep(5)
         print "Moved to VFL Module"
-        """
         #Delete all, if any, existing user2 records
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL_info']")
         amount_of_records = driver.find_element_by_xpath("//*[@id='dtVFL_info']").text
         print amount_of_records
-        time.sleep(2)
         while amount_of_records != '0 to 0 of 0 entries':
             function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/thead/tr/th[1]/input")
             driver.find_element_by_xpath("//*[@id='dtVFL']/thead/tr/th[1]/input").click()
-            time.sleep(3)
+            function_module.wait_for_element_XPATH(driver, "//*[@id='removeVfl']/i")
             driver.find_element_by_xpath("//*[@id='removeVfl']/i").click()
-            time.sleep(3)
+            function_module.wait_for_element_XPATH(driver, "//*[@id='bot2-Msg1']")
             driver.find_element_by_xpath("//*[@id='bot2-Msg1']").click()
             time.sleep(3)
             amount_of_records = driver.find_element_by_xpath("//*[@id='dtVFL_info']").text
@@ -1618,7 +1682,9 @@ class Test_002_VFL_Main(unittest.TestCase):
         #Add a single VFL record with Admin as a participant
         driver.find_element_by_css_selector("i.glyphicon.glyphicon-plus").click()
         driver.find_element_by_id("VflDate").click()
-        driver.find_element_by_link_text("1").click()
+        driver.find_element_by_id("VflDate").send_keys(function_module.first_day_of_month())
+        driver.find_element_by_id("VflDate").send_keys(Keys.RETURN)
+        time.sleep(1)
         driver.find_element_by_id("s2id_autogen1").click()
         driver.find_element_by_id("s2id_autogen1").send_keys(client_variables.wg_default_false)
         time.sleep(1)
@@ -1649,15 +1715,15 @@ class Test_002_VFL_Main(unittest.TestCase):
         driver.find_element_by_css_selector("#TimeOut").send_keys("1:00")
         time.sleep(1)
         driver.find_element_by_id("btnNextSubmit").click()
-        time.sleep(3)
-        driver.find_element_by_link_text("Finish").click()
-        time.sleep(3)
+        function_module.wait_for_element_XPATH(driver, "//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a")
+        driver.find_element_by_xpath("//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a").click()
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60)
         print "Amount of VFL Records created by user2 = 1"
         print "Total number of Test VFL Records now = 7"
         #FILTER BY CREATOR = USER1 ONLY
         #Expand Filter Panel
         driver.find_element_by_xpath("//*[@id='dtFilterHeaderContainerVfl']/div/a[1]").click()
-        time.sleep(1)
+        function_module.wait_for_element_XPATH(driver, "//*[@id='s2id_CreatedBy']")
         print "Expanded filter panel successfully (1)"
         #Remove Default Filters
         driver.find_element_by_xpath("//*[@id='s2id_CreatedBy']/ul/li[1]/a").click()
@@ -1683,7 +1749,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test020_filter_by_creator_or_participant:Failed to successfully filter by just Creator', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Failed to successfully filter by just Creator'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test020', 'Test failed to verify that only the expected 6 VFL Records where returned when filtering by just Creator', 'AssertionError')
         else:
             function_module.log_to_file('Test_VFL_Module:test020_filter_by_creator_or_participant:Successfully filtered by just Creator', 'PASSED')
             print 'Asserted that filtering by just Creator works as expected'
@@ -1695,7 +1761,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         print "Existing filters have been cleared (1)"
         #Expand Filter Panel
         driver.find_element_by_xpath("//*[@id='dtFilterHeaderContainerVfl']/div/a[1]").click()
-        time.sleep(1)
+        function_module.wait_for_element_XPATH(driver, "//*[@id='s2id_CreatedBy']")
         print "Expanded filter panel successfully (2)"
         #Remove Default Filters
         driver.find_element_by_xpath("//*[@id='s2id_CreatedBy']/ul/li[1]/a").click()
@@ -1721,7 +1787,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test020_filter_by_creator_or_participant:Failed to successfully filter by just Participant (1)', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Failed to successfully filter by just Participant (1)'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test020', 'Test failed to verify that only the expected 7 VFL Records where returned when filtering by just Participant (1)', 'AssertionError')
         else:
             function_module.log_to_file('Test_VFL_Module:test020_filter_by_creator_or_participant:Successfully filtered by just Participant (1)', 'PASSED')
             print 'Asserted that filtering by just Participant works as expected (1)'
@@ -1733,7 +1799,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         print "Existing filters have been cleared (2)"
         #Expand Filter Panel
         driver.find_element_by_xpath("//*[@id='dtFilterHeaderContainerVfl']/div/a[1]").click()
-        time.sleep(1)
+        function_module.wait_for_element_XPATH(driver, "//*[@id='s2id_CreatedBy']")
         print "Expanded filter panel successfully (3)"
         #Remove Default Filters
         driver.find_element_by_xpath("//*[@id='s2id_CreatedBy']/ul/li[1]/a").click()
@@ -1759,7 +1825,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test020_filter_by_creator_or_participant:Failed to successfully filter by just Participant (2)', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Failed to successfully filter by just Participant (2)'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test020', 'Test failed to verify that only the expected 1 VFL Record was returned when filtering by just Participant (2)', 'AssertionError')
         else:
             function_module.log_to_file('Test_VFL_Module:test020_filter_by_creator_or_participant:Successfully filtered by just Participant (2)', 'PASSED')
             print 'Asserted that filtering by just Participant works as expected (2)'
@@ -1767,14 +1833,14 @@ class Test_002_VFL_Main(unittest.TestCase):
         #FILTER BY CREATOR = USER2 & PARTICIPANT = USER1
         #Expand Filter Panel
         driver.find_element_by_xpath("//*[@id='dtFilterHeaderContainerVfl']/div/a[1]").click()
-        time.sleep(1)
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtFilterFormContainerVfl']/div/div/div/a[1]")
         #Clear filters using alternative button
         driver.find_element_by_xpath("//*[@id='dtFilterFormContainerVfl']/div/div/div/a[1]").click()
         time.sleep(1)
         print "Existing filters have been cleared (3)(ALTERNATIVE METHOD)"
         #Expand Filter Panel again
         driver.find_element_by_xpath("//*[@id='dtFilterHeaderContainerVfl']/div/a[1]").click()
-        time.sleep(1)
+        function_module.wait_for_element_XPATH(driver, "//*[@id='s2id_CreatedBy']")
         print "Expanded filter panel successfully again (4)"
         #Remove Default Filters
         driver.find_element_by_xpath("//*[@id='s2id_CreatedBy']/ul/li[1]/a").click()
@@ -1806,7 +1872,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test020_filter_by_creator_or_participant:Failed to successfully filter by Creator AND Participant', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Failed to successfully filter by Creator AND Participant'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test020', 'Test failed to verify that only the expected 7 VFL Records where returned when filtering by both Creator & Participant', 'AssertionError')
         else:
             function_module.log_to_file('Test_VFL_Module:test020_filter_by_creator_or_participant:Successfully filtered by Creator AND Participant', 'PASSED')
             print 'Asserted that filtering by Creator AND Participant works as expected'
@@ -1817,16 +1883,16 @@ class Test_002_VFL_Main(unittest.TestCase):
         time.sleep(1)
         print "Existing filters have been cleared (4)"
         #Delete record
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[3]/i")
         driver.find_element_by_xpath("//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[3]/i").click()
+        function_module.wait_for_element_XPATH(driver, "//*[@id='bot2-Msg1']")
         driver.find_element_by_xpath("//*[@id='bot2-Msg1']").click()
         time.sleep(3)
         print "Amount of VFL Records created by user2 = 0"
         print "Total number of Test VFL Records now = 6"
-
-        #Should really add verification that record was removed
-        
         #Log out of the application
         driver.find_element_by_css_selector("i.fa.fa-power-off").click()
+        function_module.wait_for_element_ID(driver, "bot2-Msg1")
         driver.find_element_by_id("bot2-Msg1").click()
         function_module.log_to_file('Test_VFL_Module:test020_filter_by_creator_or_participant:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test020_filter_by_creator_or_participant:TEST COMPLETED"
@@ -1839,6 +1905,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
+        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
         driver.find_element_by_name("UserName").clear()
         driver.find_element_by_name("UserName").send_keys(client_variables.username1)
         driver.find_element_by_name("Password").clear()
@@ -1846,18 +1913,19 @@ class Test_002_VFL_Main(unittest.TestCase):
         driver.find_element_by_css_selector("button.btn.btn-primary").click()
         function_module.log_to_file('Test_VFL_Module:test021_pagination:Successfully logged in and started test')
         print "Logged in successfully"
-        """
         #Select the VFL Module
+        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
-        time.sleep(5)
         print "Moved to VFL Module"
-        """
         #Add multiple VFL records for test
         for x in range(50):
             function_module.wait_for_element_CSS(driver, "i.glyphicon.glyphicon-plus", 20)
             driver.find_element_by_css_selector("i.glyphicon.glyphicon-plus").click()
             driver.find_element_by_id("VflDate").click()
-            driver.find_element_by_link_text("1").click()
+            driver.find_element_by_id("VflDate").send_keys(function_module.first_day_of_month())
+            driver.find_element_by_id("VflDate").send_keys(Keys.RETURN)
+            time.sleep(1)
             driver.find_element_by_id("s2id_autogen1").click()
             driver.find_element_by_id("s2id_autogen1").send_keys(client_variables.wg_default_false)
             time.sleep(1)
@@ -1881,8 +1949,8 @@ class Test_002_VFL_Main(unittest.TestCase):
             driver.find_element_by_css_selector("#TimeOut").send_keys("1:00")
             time.sleep(1)
             driver.find_element_by_id("btnNextSubmit").click()
-            time.sleep(3)
-            driver.find_element_by_link_text("Finish").click()
+            function_module.wait_for_element_XPATH(driver, "//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a")
+            driver.find_element_by_xpath("//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a").click()
             print "Added TEST 021 - Automated VFL#"+str(x)
         print "Total number of Test VFL Records now = 56"
         print "Is it really though???"
@@ -1904,7 +1972,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test021_pagination:Failed to move to the next page', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Failed to move to the next page'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test021', 'Test failed to move to NEXT page - Showing 11 to 20 of 56 entries', 'AssertionError')
             return False
         else:
             function_module.log_to_file('Test_VFL_Module:test021_pagination:Successfully moved to the next page', 'PASSED')
@@ -1920,7 +1988,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test021_pagination:Failed to move to the previous page', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Failed to move to the previous page'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test021', 'Test failed to move to PREVIOUS page - Showing 1 to 10 of 56 entries', 'AssertionError')
             return False
         else:
             function_module.log_to_file('Test_VFL_Module:test021_pagination:Successfully moved to the previous page', 'PASSED')
@@ -1936,7 +2004,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test021_pagination:Failed to move to the last page', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Failed to move to the last page'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test021', 'Test failed to move to LAST page - Showing 51 to 56 of 56 entries', 'AssertionError')
             return False
         else:
             function_module.log_to_file('Test_VFL_Module:test021_pagination:Successfully moved to the last page', 'PASSED')
@@ -1952,7 +2020,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test021_pagination:Failed to move to the first page', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Failed to move to the first page'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test021', 'Test failed to move to FIRST page - Showing 1 to 10 of 56 entries', 'AssertionError')
             return False
         else:
             function_module.log_to_file('Test_VFL_Module:test021_pagination:Successfully moved to the first page', 'PASSED')
@@ -1968,7 +2036,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test021_pagination:Failed to display 5 records', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Failed to display 5 records'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test021', 'Test failed to move to display FIVE records - Showing 1 to 5 of 56 entries', 'AssertionError')
             return False
         else:
             function_module.log_to_file('Test_VFL_Module:test021_pagination:Successfully displayed 5 records', 'PASSED')
@@ -1984,7 +2052,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test021_pagination:Failed to display 10 records', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Failed to display 10 records'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test021', 'Test failed to move to display TEN records - Showing 1 to 10 of 56 entries', 'AssertionError')
             return False
         else:
             function_module.log_to_file('Test_VFL_Module:test021_pagination:Successfully displayed 10 records', 'PASSED')
@@ -2000,7 +2068,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test021_pagination:Failed to display 25 records', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Failed to display 25 records'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test021', 'Test failed to move to display TWENTY FIVE records - Showing 1 to 25 of 56 entries', 'AssertionError')
             return False
         else:
             function_module.log_to_file('Test_VFL_Module:test021_pagination:Successfully displayed 25 records', 'PASSED')
@@ -2016,7 +2084,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test021_pagination:Failed to display 50 records', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Failed to display 50 records'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test021', 'Test failed to move to display FIFTY records - Showing 1 to 50 of 56 entries', 'AssertionError')
             return False
         else:
             function_module.log_to_file('Test_VFL_Module:test021_pagination:Successfully displayed 50 records', 'PASSED')
@@ -2032,7 +2100,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test021_pagination:Failed to display 100 records', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Failed to display 100 records'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test021', 'Test failed to move to display only ONE HUNDRED records - Showing 1 to 56 of 56 entries', 'AssertionError')
             return False
         else:
             function_module.log_to_file('Test_VFL_Module:test021_pagination:Successfully displayed 100 records', 'PASSED')
@@ -2040,6 +2108,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         time.sleep(1)
         #Log out of the application
         driver.find_element_by_css_selector("i.fa.fa-power-off").click()
+        function_module.wait_for_element_ID(driver, "bot2-Msg1")
         driver.find_element_by_id("bot2-Msg1").click()
         function_module.log_to_file('Test_VFL_Module:test021_delete_existing_vfl_record:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test021_delete_existing_vfl_record:TEST COMPLETED"
@@ -2050,6 +2119,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
+        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
         driver.find_element_by_name("UserName").clear()
         driver.find_element_by_name("UserName").send_keys(client_variables.username1)
         driver.find_element_by_name("Password").clear()
@@ -2057,12 +2127,11 @@ class Test_002_VFL_Main(unittest.TestCase):
         driver.find_element_by_css_selector("button.btn.btn-primary").click()
         function_module.log_to_file('Test_VFL_Module:test022_tool_tips:Successfully logged in and started test')
         print "Logged in successfully"
-        """
         #Select the VFL Module
+        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
-        time.sleep(5)
         print "Moved to VFL Module"
-        """
         #Assert Information text is correct
         elem = driver.find_element_by_xpath("//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[1]/label/i")
         information_text = elem.get_attribute("data-content")
@@ -2106,6 +2175,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         function_module.log_to_file('Test_VFL_Module:test022_tool_tips:All Tool Tips are correct', 'PASSED')
         #Log out of the application
         driver.find_element_by_css_selector("i.fa.fa-power-off").click()
+        function_module.wait_for_element_ID(driver, "bot2-Msg1")
         driver.find_element_by_id("bot2-Msg1").click()
         function_module.log_to_file('Test_VFL_Module:test022_tool_tips:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test022_tool_tips:TEST COMPLETED"
@@ -2119,6 +2189,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
+        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
         driver.find_element_by_name("UserName").clear()
         driver.find_element_by_name("UserName").send_keys(client_variables.username1)
         driver.find_element_by_name("Password").clear()
@@ -2126,15 +2197,14 @@ class Test_002_VFL_Main(unittest.TestCase):
         driver.find_element_by_css_selector("button.btn.btn-primary").click()
         function_module.log_to_file('Test_VFL_Module:test023_creator_participant_rights:Successfully logged in (as User1) and started test')
         print "Logged in as User1 successfully"
-        """
         #Select the VFL Module
+        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
-        time.sleep(5)
         print "Moved to VFL Module"
-        """
         #Edit first Record and add User2 as Participant
         driver.find_element_by_xpath("//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i").click()
-        time.sleep(1)
+        function_module.wait_for_element_ID(driver, "s2id_autogen2")
         driver.find_element_by_id("s2id_autogen2").click()
         driver.find_element_by_id("s2id_autogen2").send_keys(client_variables.fullname2)
         time.sleep(5)
@@ -2143,16 +2213,18 @@ class Test_002_VFL_Main(unittest.TestCase):
         print "User 2 added as Participant to first VFL Record"
         #Move successfully to the next tab, close and log out
         driver.find_element_by_id("btnNextSubmit").click()
-        time.sleep(1)
+        function_module.wait_for_element_XPATH(driver, "//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a", 20)
         print "Moved to Acts Tab"
-        driver.find_element_by_link_text("Finish").click()
-        time.sleep(1)
+        driver.find_element_by_XPATH("//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a").click()
+        function_module.wait_for_element_CSS(driver, "i.fa.fa-power-off", 20)
         print "Successfully saved VFL Record and returned to list view"
         driver.find_element_by_css_selector("i.fa.fa-power-off").click()
+        function_module.wait_for_element_ID(driver, "bot2-Msg1")
         driver.find_element_by_id("bot2-Msg1").click()
         time.sleep(1)
         print "Logged out of application as User 1"
         #Login as User2
+        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
         driver.find_element_by_name("UserName").clear()
         driver.find_element_by_name("UserName").send_keys(client_variables.username2)
         driver.find_element_by_name("Password").clear()
@@ -2160,12 +2232,11 @@ class Test_002_VFL_Main(unittest.TestCase):
         driver.find_element_by_css_selector("button.btn.btn-primary").click()
         function_module.log_to_file('Test_VFL_Module:test023_creator_participant_rights:Successfully logged in (as User2) and started test')
         print "Logged in as User2 successfully"
-        """
         #Select the VFL Module
+        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
-        time.sleep(5)
         print "Moved to VFL Module"
-        """
         #Verify Delete button is disabled for Participant
         elem = driver.find_element_by_xpath("//*[@id='dtVFL']/tbody/tr/td[8]/div[2]/div/a[3]")
         cannot_delete = elem.get_attribute("disabled")
@@ -2174,7 +2245,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         #FILTER BY CREATOR & PARTICIPANT = USER1 ONLY
         #Expand Filter Panel
         driver.find_element_by_xpath("//*[@id='dtFilterHeaderContainerVfl']/div/a[1]").click()
-        time.sleep(1)
+        function_module.wait_for_element_XPATH(driver, "//*[@id='s2id_CreatedBy']")
         print "Expanded filter panel successfully"
         #Remove Default Filters
         driver.find_element_by_xpath("//*[@id='s2id_CreatedBy']/ul/li[1]/a").click()
@@ -2215,6 +2286,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         function_module.log_to_file('Test_VFL_Module:test023_creator_participant_rights:Successfully verified limited permissions for non creators AND/OR participants', 'PASSED')
         #Log out of the application
         driver.find_element_by_css_selector("i.fa.fa-power-off").click()
+        function_module.wait_for_element_ID(driver, "bot2-Msg1")
         driver.find_element_by_id("bot2-Msg1").click()
         function_module.log_to_file('Test_VFL_Module:test023_creator_participant_rights:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test023_creator_participant_rights:TEST COMPLETED"
@@ -2223,25 +2295,6 @@ class Test_002_VFL_Main(unittest.TestCase):
         """NOTE: test_024 is missing at the moment. This test will be responsible for testing the
         functionality of the Show/Hide columns control. This control is a javascript control and I
         need to first research how to locate javascript elements with webdriver"""
-
-        
-    def wait_for_element_CSS(locator, time=10):
-        try:
-            WebDriverWait(driver, time).until(lambda s: s.find_element(By.CSS_SELECTOR, locator).is_displayed())
-        except NoSuchElementException:
-            function_module.log_to_file('Test_VFL_Module:TIMEOUT:Failed to locate required element within requirement timeframe', 'FAILED')
-            print 'ERROR - TIMEOUT - Failed to locate required element within requirement timeframe'
-            #Send potential timeout email
-            return False
-
-    def wait_for_element_XPATH(locator, time=10):
-        try:
-            WebDriverWait(driver, time).until(lambda s: s.find_element(By.XPATH, locator).is_displayed())
-        except NoSuchElementException:
-            function_module.log_to_file('Test_VFL_Module:TIMEOUT:Failed to locate required element within requirement timeframe', 'FAILED')
-            print 'ERROR - TIMEOUT - Failed to locate required element within requirement timeframe'
-            #Send potential timeout email
-            return False
         
     def tearDown(self):
         """Standard test tear down method"""
@@ -2268,6 +2321,7 @@ class Test_003_VFL_Settings(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
+        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
         driver.find_element_by_name("UserName").clear()
         driver.find_element_by_name("UserName").send_keys(client_variables.username1)
         driver.find_element_by_name("Password").clear()
@@ -2275,15 +2329,15 @@ class Test_003_VFL_Settings(unittest.TestCase):
         driver.find_element_by_css_selector("button.btn.btn-primary").click()
         function_module.log_to_file('Test_VFL_Module:test025_add_year:Successfully logged in and started test')
         print "Logged in successfully"
-        """
         #Select the VFL Module
+        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
-        time.sleep(5)
         print "Moved to VFL Module"
-        """
         #Open the VFL Settings Window
+        function_module.wait_for_element_XPATH(driver, "//*[@id='content']/div[1]/div[2]/div/a")
         driver.find_element_by_xpath("//*[@id='content']/div[1]/div[2]/div/a").click()
-        time.sleep(3)
+        function_module.wait_for_element_XPATH(driver, "//*[@id='Year']")
         print "Successfully opened VFL Settings dialog"
         #Assert that Year field is automatically populated with current year
         year_populated = True
@@ -2296,7 +2350,7 @@ class Test_003_VFL_Settings(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test025_add_year:Year field is NOT set to current year by default', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - The Settings Year field is NOT set to current year by default'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test025', 'When opening the VFL Settings dialog box, the year field was not populated with the current year by default', 'AssertionError')
             year_populated = False
         else:
             function_module.log_to_file('Test_VFL_Module:test025_add_year:Year field is set to current year by default', 'PASSED')
@@ -2323,7 +2377,7 @@ class Test_003_VFL_Settings(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test025_add_year:Year field was not increased by 1 as expected', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Failed to increase the year field by 1 as expected'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test025', 'Failed to verify that the year field was successfully increased by one', 'AssertionError')
         else:
             function_module.log_to_file('Test_VFL_Module:test025_add_year:Year field increased by 1', 'PASSED')
             print 'Asserted that the Settings Year field can be increased by 1'
@@ -2339,7 +2393,7 @@ class Test_003_VFL_Settings(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test025_add_year:Year field was not decreased by 1 as expected', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Failed to decrease the year field by 1 as expected'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test025', 'Failed to verify that the year field was successfully decreased by one', 'AssertionError')
         else:
             function_module.log_to_file('Test_VFL_Module:test025_add_year:Year field decreased by 1', 'PASSED')
             print 'Asserted that the Settings Year field can be decreased by 1'
@@ -2354,7 +2408,7 @@ class Test_003_VFL_Settings(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test025_add_year:Number of Visits field was NOT set to 0 by default', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Number of Visits field was not set to 0 by default'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test025', 'When opening the VFL Settings dialog box, the Number of Visits field was not populated with 0 by default', 'AssertionError')
             visits_populated = False
         else:
             function_module.log_to_file('Test_VFL_Module:test025_add_year:Number of Visits field was set to 0 by default', 'PASSED')
@@ -2381,7 +2435,7 @@ class Test_003_VFL_Settings(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test025_add_year:Number of Visits field can be assigned a negative value', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Number of Visits field can be assigned a negative value'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test025', 'Test successfully entered a negative value in the Number of Visits field', 'AssertionError')
         else:
             function_module.log_to_file('Test_VFL_Module:test025_add_year:Number of Visits field can NOT be assigned a negative value', 'PASSED')
             print 'Asserted that Number of Visits field can NOT be assigned a negative value'
@@ -2397,7 +2451,7 @@ class Test_003_VFL_Settings(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test025_add_year:Number of Visits field failed to increase to a value of 5', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Number of Visits field failed to increase to a value of 5'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test025', 'Failed to verify that the Number of Visits field was successfully increased by five', 'AssertionError')
         else:
             function_module.log_to_file('Test_VFL_Module:test025_add_year:Number of Visits field was increased to 5', 'PASSED')
             print 'Asserted that Number of Visits field was increased to 5'
@@ -2413,7 +2467,7 @@ class Test_003_VFL_Settings(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test025_add_year:Number of Visits field failed to decrease to a value of 3', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Number of Visits field failed to decrease to a value of 3'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test025', 'Failed to verify that the Number of Visits field was successfully decreased by three', 'AssertionError')
         else:
             function_module.log_to_file('Test_VFL_Module:test025_add_year:Number of Visits field was decreased to 3', 'PASSED')
             print 'Asserted that Number of Visits field was decreased to 3'
@@ -2431,7 +2485,7 @@ class Test_003_VFL_Settings(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test025_add_year:Year for first row is NOT set to the current year', 'FAILED')
             print 'ERROR - ASSERTION ERROR - Year for first row is not set to the current year'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test025', 'Failed to verify that the first row was successfully added with Year = current year', 'AssertionError')
             return False
         else:
             function_module.log_to_file('Test_VFL_Module:test025_add_year:Year for first row is set to the current year', 'PASSED')
@@ -2444,7 +2498,7 @@ class Test_003_VFL_Settings(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test025_add_year:Number of Visits for first row is NOT set to expected value of 3', 'FAILED')
             print 'ERROR - ASSERTION ERROR - Number of Visits for first rowd is NOT set to expected value of 3'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test025', 'Failed to verify that the first row was successfully added with Numner of Visits = three', 'AssertionError')
             return False
         else:
             function_module.log_to_file('Test_VFL_Module:test025_add_year:Number of Visits for first row is set to expected value of 3', 'PASSED')
@@ -2456,6 +2510,7 @@ class Test_003_VFL_Settings(unittest.TestCase):
         print "Closed VFL Settings dialog box"
         #Log out of the application
         driver.find_element_by_css_selector("i.fa.fa-power-off").click()
+        function_module.wait_for_element_ID(driver, "bot2-Msg1")
         driver.find_element_by_id("bot2-Msg1").click()
         function_module.log_to_file('Test_VFL_Module:test025_add_year:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test025_add_year:TEST COMPLETED"
@@ -2467,6 +2522,7 @@ class Test_003_VFL_Settings(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
+        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
         driver.find_element_by_name("UserName").clear()
         driver.find_element_by_name("UserName").send_keys(client_variables.username1)
         driver.find_element_by_name("Password").clear()
@@ -2474,15 +2530,15 @@ class Test_003_VFL_Settings(unittest.TestCase):
         driver.find_element_by_css_selector("button.btn.btn-primary").click()
         function_module.log_to_file('Test_VFL_Module:test026_update_year:Successfully logged in and started test')
         print "Logged in successfully"
-        """
         #Select the VFL Module
+        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
-        time.sleep(5)
         print "Moved to VFL Module"
-        """
         #Open the VFL Settings Window
+        function_module.wait_for_element_XPATH(driver, "//*[@id='content']/div[1]/div[2]/div/a")
         driver.find_element_by_xpath("//*[@id='content']/div[1]/div[2]/div/a").click()
-        time.sleep(3)
+        function_module.wait_for_element_XPATH(driver, "//*[@id='Year']")
         print "Successfully opened VFL Settings dialog"
         #Assert that Year field is automatically populated with current year
         year_populated = True
@@ -2495,7 +2551,7 @@ class Test_003_VFL_Settings(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test026_update_year:Year field is NOT set to current year by default', 'FAILED')
             print 'ERROR - ASSERTION EXCPETION - The Settings Year field is NOT set to current year by default'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test026', 'Failed to verify that the first row was is set to Year = current year', 'AssertionError')
             year_populated = False
         else:
             function_module.log_to_file('Test_VFL_Module:test026_update_year:Year field is set to current year by default', 'PASSED')
@@ -2518,7 +2574,7 @@ class Test_003_VFL_Settings(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test026_update_year:Number of Visits for first row is NOT set to expected value of 3', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Number of Visits for first row is NOT set to expected value of 3'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test026', 'Failed to verify that the first row was set to Numner of Visits = three', 'AssertionError')
         else:
             function_module.log_to_file('Test_VFL_Module:test026_update_year:Number of Visits for first row is set to expected value of 3', 'PASSED')
             print 'Asserted that Number of Visits for first row is set to expected value of 3'
@@ -2535,7 +2591,7 @@ class Test_003_VFL_Settings(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test026_update_year:Number of Visits for first row is NOT set to expected value of 1', 'FAILED')
             print 'ERROR - ASSERTION ERROR - Number of Visits for first row is NOT set to expected value of 1'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test026', 'Failed to verify that by using the fields are the top of the form, the first row was successfully changed to Numner of Visits = one', 'AssertionError')
         else:
             function_module.log_to_file('Test_VFL_Module:test026_update_year:Number of Visits for first row is set to expected value of 1', 'PASSED')
             print 'Asserted that Number of Visits for first row is set to expected value of 1'
@@ -2558,7 +2614,7 @@ class Test_003_VFL_Settings(unittest.TestCase):
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test026_update_year:Number of Visits for first row is NOT set to expected value of 4', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Number of Visits for first row is NOT set to expected value of 4'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test026', 'Failed to verify that by using the edit button, the first row was successfully changed to Numner of Visits = four', 'AssertionError')
         else:
             function_module.log_to_file('Test_VFL_Module:test026_update_year:Number of Visits for first row is set to expected value of 4', 'PASSED')
             print 'Asserted that Number of Visits for first row is set to expected value of 4'
@@ -2569,6 +2625,7 @@ class Test_003_VFL_Settings(unittest.TestCase):
         print "Closed VFL Settings dialog box"
         #Log out of the application
         driver.find_element_by_css_selector("i.fa.fa-power-off").click()
+        function_module.wait_for_element_ID(driver, "bot2-Msg1")
         driver.find_element_by_id("bot2-Msg1").click()
         function_module.log_to_file('Test_VFL_Module:test026_update_year:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test026_update_year:TEST COMPLETED"
@@ -2577,8 +2634,10 @@ class Test_003_VFL_Settings(unittest.TestCase):
         """Simple test is used to delete the row to the VFL Settings table
         that was just added and edited."""
         driver = self.driver
+        self.driver.implicitly_wait(5)
         driver.get(self.base_url + "/")
         #Login to the application
+        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
         driver.find_element_by_name("UserName").clear()
         driver.find_element_by_name("UserName").send_keys(client_variables.username1)
         driver.find_element_by_name("Password").clear()
@@ -2586,24 +2645,24 @@ class Test_003_VFL_Settings(unittest.TestCase):
         driver.find_element_by_css_selector("button.btn.btn-primary").click()
         function_module.log_to_file('Test_VFL_Module:test027_delete_year:Successfully logged in and started test')
         print "Logged in successfully"
-        """
         #Select the VFL Module
+        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
-        time.sleep(5)
         print "Moved to VFL Module"
-        """
         #Open the VFL Settings Window
+        function_module.wait_for_element_XPATH(driver, "//*[@id='content']/div[1]/div[2]/div/a")
         driver.find_element_by_xpath("//*[@id='content']/div[1]/div[2]/div/a").click()
-        time.sleep(3)
+        function_module.wait_for_element_XPATH(driver, "//*[@id='Year']")
         print "Successfully opened VFL Settings dialog"
         #Delete first row for current year
         driver.find_element_by_xpath("//*[@id='dtSettingsContainer']/tr/td[3]/div/div/a[2]/i").click()
-        time.sleep(1)
+        function_module.wait_for_element_XPATH(driver, "//*[@id='bot2-Msg1']")
         driver.find_element_by_xpath("//*[@id='bot2-Msg1']").click()
         print "Deleting the first row"
         time.sleep(3)
         #Verify that first row has been deleted
-        self.driver.implicitly_wait(0)
+        #self.driver.implicitly_wait(0)
         try:
             driver.find_element_by_xpath("//*[@id='dtSettingsContainer']/tr/td[1]")
         except NoSuchElementException:
@@ -2612,15 +2671,16 @@ class Test_003_VFL_Settings(unittest.TestCase):
         else:
             function_module.log_to_file('Test_VFL_Module:test011_view_existing_vfl_record:Could not verify that the first row has been deleted', 'FAILED')
             print 'ERROR WARNING - Could not verify that the first row has been deleted'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test027', 'Test could not successfully verify that the first row from the Settings page was deleted as expected', 'NoSuchElementException')
             return False
-        self.driver.implicitly_wait(30)
+        #self.driver.implicitly_wait(30)
         #Close the VFL Settings window
         driver.find_element_by_xpath("//*[@id='cancel_modalSettings']").click()
         time.sleep(1)
         print "Closed VFL Settings dialog box"
         #Log out of the application
         driver.find_element_by_css_selector("i.fa.fa-power-off").click()
+        function_module.wait_for_element_ID(driver, "bot2-Msg1")
         driver.find_element_by_id("bot2-Msg1").click()
         function_module.log_to_file('Test_VFL_Module:test027_delete_year:TEST COMPLETED', 'PASSED')
         print 'Test_VFL_Module:test027_delete_year:TEST COMPLETED'
@@ -2653,29 +2713,30 @@ class Test_004_VFL_Export(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
+        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
         driver.find_element_by_name("UserName").clear()
         driver.find_element_by_name("UserName").send_keys(client_variables.username1)
         driver.find_element_by_name("Password").clear()
         driver.find_element_by_name("Password").send_keys(client_variables.pword1)
         driver.find_element_by_css_selector("button.btn.btn-primary").click()
         function_module.log_to_file('Test_VFL_Module:test028_export_all_excel:Successfully logged in and started test')
-        time.sleep(5)
+        #time.sleep(5)
         print "Logged in successfully"
-        """
         #Select the VFL Module
+        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
-        time.sleep(5)
         print "Moved to VFL Module"
-        """
         #export all current records
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60)
         driver.find_element_by_css_selector("i.glyphicon.glyphicon-export").click()
-        time.sleep(2)
+        function_module.wait_for_element_XPATH(driver, "//*[@id='formExport']/div[1]/section[1]/div/label[1]/i")
         driver.find_element_by_xpath("//*[@id='formExport']/div[1]/section[1]/div/label[1]/i").click()
         time.sleep(1)
         Select(driver.find_element_by_xpath("//*[@id='ExportAs']")).select_by_visible_text("Excel")
-        time.sleep(1)
+        function_module.wait_for_element_ID(driver, "submit_modalExport")
         driver.find_element_by_id("submit_modalExport").click()
-        time.sleep(2)
+        function_module.wait_for_element_ID(driver, "bot2-Msg1")
         driver.find_element_by_id("bot2-Msg1").click()
         time.sleep(2)
         print "Successfully exported all current VFL records - EXCEL"
@@ -2686,6 +2747,7 @@ class Test_004_VFL_Export(unittest.TestCase):
         print "Moved file into client specific folder"
         #Log out of the application
         driver.find_element_by_css_selector("i.fa.fa-power-off").click()
+        function_module.wait_for_element_ID(driver, "bot2-Msg1")
         driver.find_element_by_id("bot2-Msg1").click()
         function_module.log_to_file('Test_VFL_Module:test028_export_all_excel:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test028_export_all_excel:TEST COMPLETED"
@@ -2697,6 +2759,7 @@ class Test_004_VFL_Export(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
+        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
         driver.find_element_by_name("UserName").clear()
         driver.find_element_by_name("UserName").send_keys(client_variables.username1)
         driver.find_element_by_name("Password").clear()
@@ -2705,19 +2768,19 @@ class Test_004_VFL_Export(unittest.TestCase):
         function_module.log_to_file('Test_VFL_Module:test029_export_current_page_excel:Successfully logged in and started test')
         time.sleep(5)
         print "Logged in successfully"
-        """
         #Select the VFL Module
+        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
-        time.sleep(5)
         print "Moved to VFL Module"
-        """
         #export current page of VFL records
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60)
         driver.find_element_by_css_selector("i.glyphicon.glyphicon-export").click()
-        time.sleep(2)
+        function_module.wait_for_element_XPATH(driver, "//*[@id='formExport']/div[1]/section[1]/div/label[2]/i")
         driver.find_element_by_xpath("//*[@id='formExport']/div[1]/section[1]/div/label[2]/i").click()
         time.sleep(1)
         Select(driver.find_element_by_xpath("//*[@id='ExportAs']")).select_by_visible_text("Excel")
-        time.sleep(1)
+        function_module.wait_for_element_ID(driver, "submit_modalExport")
         driver.find_element_by_id("submit_modalExport").click()
         time.sleep(2)
         print "Successfully exported current page of VFL records - EXCEL"
@@ -2728,6 +2791,7 @@ class Test_004_VFL_Export(unittest.TestCase):
         print "Moved file into client specific folder"
         #Log out of the application
         driver.find_element_by_css_selector("i.fa.fa-power-off").click()
+        function_module.wait_for_element_ID(driver, "bot2-Msg1")
         driver.find_element_by_id("bot2-Msg1").click()
         function_module.log_to_file('Test_VFL_Module:test029_export_current_page_excel:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test029_export_current_page_excel:TEST COMPLETED"
@@ -2739,6 +2803,7 @@ class Test_004_VFL_Export(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
+        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
         driver.find_element_by_name("UserName").clear()
         driver.find_element_by_name("UserName").send_keys(client_variables.username1)
         driver.find_element_by_name("Password").clear()
@@ -2747,24 +2812,24 @@ class Test_004_VFL_Export(unittest.TestCase):
         function_module.log_to_file('Test_VFL_Module:test030_export_selected_rows_excel:Successfully logged in and started test')
         time.sleep(5)
         print "Logged in successfully"
-        """
         #Select the VFL Module
+        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
-        time.sleep(5)
         print "Moved to VFL Module"
-        """
         #Manually select top five records
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60)
         for x in range(1,6):
             y = str(x)
             driver.find_element_by_xpath("//*[@id='dtVFL']/tbody/tr["+y+"]/td[1]/input").click()
         print "Selected top 5 VFL records on first page of list view"
         #export selected records only
         driver.find_element_by_css_selector("i.glyphicon.glyphicon-export").click()
-        time.sleep(2)
+        function_module.wait_for_element_XPATH(driver, "//*[@id='formExport']/div[1]/section[1]/div/label[3]/i")
         driver.find_element_by_xpath("//*[@id='formExport']/div[1]/section[1]/div/label[3]/i").click()
         time.sleep(1)
         Select(driver.find_element_by_xpath("//*[@id='ExportAs']")).select_by_visible_text("Excel")
-        time.sleep(1)
+        function_module.wait_for_element_ID(driver, "submit_modalExport")
         driver.find_element_by_id("submit_modalExport").click()
         time.sleep(2)
         print "Successfully exported selected VFL records - EXCEL"
@@ -2775,6 +2840,7 @@ class Test_004_VFL_Export(unittest.TestCase):
         print "Moved file into client specific folder"
         #Log out of the application
         driver.find_element_by_css_selector("i.fa.fa-power-off").click()
+        function_module.wait_for_element_ID(driver, "bot2-Msg1")
         driver.find_element_by_id("bot2-Msg1").click()
         function_module.log_to_file('Test_VFL_Module:test030_export_selected_rows_excel:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test030_export_selected_rows_excel:TEST COMPLETED"
@@ -2786,6 +2852,7 @@ class Test_004_VFL_Export(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
+        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
         driver.find_element_by_name("UserName").clear()
         driver.find_element_by_name("UserName").send_keys(client_variables.username1)
         driver.find_element_by_name("Password").clear()
@@ -2794,21 +2861,21 @@ class Test_004_VFL_Export(unittest.TestCase):
         function_module.log_to_file('Test_VFL_Module:test031_export_all_csv:Successfully logged in and started test')
         time.sleep(5)
         print "Logged in successfully"
-        """
         #Select the VFL Module
+        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
-        time.sleep(5)
         print "Moved to VFL Module"
-        """
         #export all current records
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60)
         driver.find_element_by_css_selector("i.glyphicon.glyphicon-export").click()
-        time.sleep(2)
+        function_module.wait_for_element_XPATH(driver, "//*[@id='formExport']/div[1]/section[1]/div/label[1]/i")
         driver.find_element_by_xpath("//*[@id='formExport']/div[1]/section[1]/div/label[1]/i").click()
         time.sleep(1)
         Select(driver.find_element_by_xpath("//*[@id='ExportAs']")).select_by_visible_text("CSV")
-        time.sleep(1)
+        function_module.wait_for_element_ID(driver, "submit_modalExport")
         driver.find_element_by_id("submit_modalExport").click()
-        time.sleep(2)
+        function_module.wait_for_element_ID(driver, "bot2-Msg1")
         driver.find_element_by_id("bot2-Msg1").click()
         time.sleep(2)
         print "Successfully exported all current VFL records - CSV"
@@ -2819,6 +2886,7 @@ class Test_004_VFL_Export(unittest.TestCase):
         print "Moved file into client specific folder"
         #Log out of the application
         driver.find_element_by_css_selector("i.fa.fa-power-off").click()
+        function_module.wait_for_element_ID(driver, "bot2-Msg1")
         driver.find_element_by_id("bot2-Msg1").click()
         function_module.log_to_file('Test_VFL_Module:test031_export_all_csv:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test031_export_all_csv:TEST COMPLETED" 
@@ -2830,6 +2898,7 @@ class Test_004_VFL_Export(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
+        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
         driver.find_element_by_name("UserName").clear()
         driver.find_element_by_name("UserName").send_keys(client_variables.username1)
         driver.find_element_by_name("Password").clear()
@@ -2838,19 +2907,19 @@ class Test_004_VFL_Export(unittest.TestCase):
         function_module.log_to_file('Test_VFL_Module:test032_export_current_page_csv:Successfully logged in and started test')
         time.sleep(5)
         print "Logged in successfully"
-        """
         #Select the VFL Module
+        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
-        time.sleep(5)
         print "Moved to VFL Module"
-        """
         #export current page of VFL records
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60)
         driver.find_element_by_css_selector("i.glyphicon.glyphicon-export").click()
-        time.sleep(2)
+        function_module.wait_for_element_XPATH(driver, "//*[@id='formExport']/div[1]/section[1]/div/label[2]/i")
         driver.find_element_by_xpath("//*[@id='formExport']/div[1]/section[1]/div/label[2]/i").click()
         time.sleep(1)
         Select(driver.find_element_by_xpath("//*[@id='ExportAs']")).select_by_visible_text("CSV")
-        time.sleep(1)
+        function_module.wait_for_element_ID(driver, "submit_modalExport")
         driver.find_element_by_id("submit_modalExport").click()
         time.sleep(2)
         print "Successfully exported current page of VFL records - CSV"
@@ -2861,6 +2930,7 @@ class Test_004_VFL_Export(unittest.TestCase):
         print "Moved file into client specific folder"
         #Log out of the application
         driver.find_element_by_css_selector("i.fa.fa-power-off").click()
+        function_module.wait_for_element_ID(driver, "bot2-Msg1")
         driver.find_element_by_id("bot2-Msg1").click()
         function_module.log_to_file('Test_VFL_Module:test032_export_current_page_csv:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test032_export_current_page_csv:TEST COMPLETED"
@@ -2872,6 +2942,7 @@ class Test_004_VFL_Export(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
+        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
         driver.find_element_by_name("UserName").clear()
         driver.find_element_by_name("UserName").send_keys(client_variables.username1)
         driver.find_element_by_name("Password").clear()
@@ -2880,24 +2951,24 @@ class Test_004_VFL_Export(unittest.TestCase):
         function_module.log_to_file('Test_VFL_Module:test033_export_selected_rows_csv:Successfully logged in and started test')
         time.sleep(5)
         print "Logged in successfully"
-        """
         #Select the VFL Module
+        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
-        time.sleep(5)
         print "Moved to VFL Module"
-        """
         #Manually select top five records
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60)
         for x in range(1,6):
             y = str(x)
             driver.find_element_by_xpath("//*[@id='dtVFL']/tbody/tr["+y+"]/td[1]/input").click()
         print "Selected top 5 VFL records on first page of list view"
         #export selected records only
         driver.find_element_by_css_selector("i.glyphicon.glyphicon-export").click()
-        time.sleep(2)
+        function_module.wait_for_element_XPATH(driver, "//*[@id='formExport']/div[1]/section[1]/div/label[3]/i")
         driver.find_element_by_xpath("//*[@id='formExport']/div[1]/section[1]/div/label[3]/i").click()
         time.sleep(1)
         Select(driver.find_element_by_xpath("//*[@id='ExportAs']")).select_by_visible_text("CSV")
-        time.sleep(1)
+        function_module.wait_for_element_ID(driver, "submit_modalExport")
         driver.find_element_by_id("submit_modalExport").click()
         time.sleep(2)
         print "Successfully exported selected VFL records - CSV"
@@ -2908,6 +2979,7 @@ class Test_004_VFL_Export(unittest.TestCase):
         print "Moved file into client specific folder"
         #Log out of the application
         driver.find_element_by_css_selector("i.fa.fa-power-off").click()
+        function_module.wait_for_element_ID(driver, "bot2-Msg1")
         driver.find_element_by_id("bot2-Msg1").click()
         function_module.log_to_file('Test_VFL_Module:test033_export_selected_rows_csv:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test033_export_selected_rows_csv:TEST COMPLETED"
@@ -2940,6 +3012,7 @@ class Test_005_VFL_Reports(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
+        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
         driver.find_element_by_name("UserName").clear()
         driver.find_element_by_name("UserName").send_keys(client_variables.username1)
         driver.find_element_by_name("Password").clear()
@@ -2948,29 +3021,29 @@ class Test_005_VFL_Reports(unittest.TestCase):
         function_module.log_to_file('Test_VFL_Module:test034_vfl_activity_summary_report_no_subgroups:Successfully logged in and started test')
         time.sleep(5)
         print "Logged in successfully"
-        """
         #Select the VFL Module
+        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
-        time.sleep(5)
         print "Moved to VFL Module"
-        """
         #Move to the Reports section
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60)
         driver.find_element_by_xpath("//*[@id='left-panel']/nav/ul/li[3]/a/i").click()
-        time.sleep(1)
+        function_module.wait_for_element_XPATH(driver, "//*[@id='content']/div[1]/div[1]/h1")
         elem = driver.find_element_by_xpath("//*[@id='content']/div[1]/div[1]/h1").text
         try:
             assert elem == 'Reports'
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test034_vfl_activity_summary_report_no_subgroups:Failed to access to the Report tab', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Failed to access to the Report tab'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test034', 'Test could not verify that the Reports page has been accessed successfully', 'AssertionError')
             return False
         else:
             function_module.log_to_file('Test_VFL_Module:test034_vfl_activity_summary_report_no_subgroups:Successfully moved to the Report section', 'PASSED')
             print 'Asserted that we have successfully moved to the Report section'
         #Open the VFL Activity Summary Report parameters & Verify that WorkGroup field is mandatory
         driver.find_element_by_xpath("//*[@id='widDtReports']/div/div[2]/div[1]/a").click()
-        time.sleep(1)
+        function_module.wait_for_element_XPATH(driver, "//*[@id='submit_modalSettings']")
         print "Opened VFL Activity Summary Report parameters"
         elem = driver.find_element_by_xpath("//*[@class='select required-select2']/input")
         workgroup_mandatory = elem.get_attribute("aria-required")
@@ -2981,7 +3054,7 @@ class Test_005_VFL_Reports(unittest.TestCase):
         driver.find_element_by_xpath("//*[@id='s2id_autogen2']").send_keys(client_variables.wg_default_false)
         time.sleep(3)
         driver.find_element_by_xpath("//*[@id='s2id_autogen2']").send_keys(Keys.RETURN)
-        time.sleep(3)
+        time.sleep(1)
         driver.find_element_by_xpath("//*[@id='submit_modalSettings']").click()
         print "Generated and downloaded VFL Activity Summary Report"
         time.sleep(6)
@@ -3009,6 +3082,7 @@ class Test_005_VFL_Reports(unittest.TestCase):
         print "Moved file into client specific folder"
         #Log out of the application
         driver.find_element_by_css_selector("i.fa.fa-power-off").click()
+        function_module.wait_for_element_ID(driver, "bot2-Msg1")
         driver.find_element_by_id("bot2-Msg1").click()
         function_module.log_to_file('Test_VFL_Module:test034_vfl_activity_summary_report_no_subgroups:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test034_vfl_activity_summary_report_no_subgroups:TEST COMPLETED"
@@ -3020,6 +3094,7 @@ class Test_005_VFL_Reports(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
+        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
         driver.find_element_by_name("UserName").clear()
         driver.find_element_by_name("UserName").send_keys(client_variables.username1)
         driver.find_element_by_name("Password").clear()
@@ -3028,29 +3103,29 @@ class Test_005_VFL_Reports(unittest.TestCase):
         function_module.log_to_file('Test_VFL_Module:test035_vfl_activity_summary_report_with_subgroups:Successfully logged in and started test')
         time.sleep(5)
         print "Logged in successfully"
-        """
         #Select the VFL Module
+        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
-        time.sleep(5)
         print "Moved to VFL Module"
-        """
         #Move to the Reports section
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60)
         driver.find_element_by_xpath("//*[@id='left-panel']/nav/ul/li[3]/a/i").click()
-        time.sleep(1)
+        function_module.wait_for_element_XPATH(driver, "//*[@id='content']/div[1]/div[1]/h1")
         elem = driver.find_element_by_xpath("//*[@id='content']/div[1]/div[1]/h1").text
         try:
             assert elem == 'Reports'
         except AssertionError:
             function_module.log_to_file('Test_VFL_Module:test035_vfl_activity_summary_report_with_subgroups:Failed to access to the Report tab', 'FAILED')
             print 'ERROR - ASSERTION EXCEPTION - Failed to access to the Report tab'
-            #Send Potential Error email
+            email_module.error_mail('VFL Test035', 'Test could not verify that the Reports page has been accessed successfully', 'AssertionError')
             return False
         else:
             function_module.log_to_file('Test_VFL_Module:test035_vfl_activity_summary_report_with_subgroups:Successfully moved to the Report section', 'PASSED')
             print 'Asserted that we have successfully moved to the Report section'
         #Open the VFL Activity Summary Report parameters
         driver.find_element_by_xpath("//*[@id='widDtReports']/div/div[2]/div[1]/a").click()
-        time.sleep(1)
+        function_module.wait_for_element_XPATH(driver, "//*[@id='submit_modalSettings']")
         print "Opened VFL Activity Summary Report parameters"
         elem = driver.find_element_by_xpath("//*[@class='select required-select2']/input")
         workgroup_mandatory = elem.get_attribute("aria-required")
@@ -3091,6 +3166,7 @@ class Test_005_VFL_Reports(unittest.TestCase):
         print "Moved file into client specific folder"
         #Log out of the application
         driver.find_element_by_css_selector("i.fa.fa-power-off").click()
+        function_module.wait_for_element_ID(driver, "bot2-Msg1")
         driver.find_element_by_id("bot2-Msg1").click()
         function_module.log_to_file('Test_VFL_Module:test035_vfl_activity_summary_report_with_subgroups:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test035_vfl_activity_summary_report_with_subgroups:TEST COMPLETED"
@@ -3101,6 +3177,7 @@ class Test_005_VFL_Reports(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
+        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
         driver.find_element_by_name("UserName").clear()
         driver.find_element_by_name("UserName").send_keys(client_variables.username1)
         driver.find_element_by_name("Password").clear()
@@ -3109,19 +3186,19 @@ class Test_005_VFL_Reports(unittest.TestCase):
         function_module.log_to_file('Test_VFL_Module:test036_vfl_summary_report:Successfully logged in and started test')
         time.sleep(5)
         print "Logged in successfully"
-        """
         #Select the VFL Module
+        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
-        time.sleep(5)
         print "Moved to VFL Module"
-        """
         #Edit first VFL record in list, adding acts with comments, attachments and actions
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60)
         driver.find_element_by_xpath("//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i").click()
-        time.sleep(1)
+        function_module.wait_for_element_ID(driver, "btnNextSubmit")
         print "Edited first VFL record on list view page"
         #Move successfully to the next tab
         driver.find_element_by_id("btnNextSubmit").click()
-        time.sleep(1)
+        function_module.wait_for_element_XPATH(driver, "//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a")
         print "Moved to Acts Tab"
         #Add a Safe Act of type 1
         driver.find_element_by_xpath("//*[@id='formActs']/div/section[1]/div/label[1]/i").click()
@@ -3166,7 +3243,8 @@ class Test_005_VFL_Reports(unittest.TestCase):
         time.sleep(5)
         print "Added an Action"
         #Select the finish button to return to the Main List View
-        driver.find_element_by_link_text("Finish").click()
+        driver.find_element_by_xpath("//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a").click()
+        function_module.wait_for_element_CSS(driver, "i.fa.fa-power-off")
         print "Successfully saved VFL Record and returned to list view"
         #Assert the Print Report button is disabled by default
         elem = driver.find_element_by_xpath("//*[@id='printVfl']")
@@ -3216,6 +3294,7 @@ class Test_005_VFL_Reports(unittest.TestCase):
         driver.switch_to_window(driver.window_handles[0])
         time.sleep(2)
         driver.find_element_by_css_selector("i.fa.fa-power-off").click()
+        function_module.wait_for_element_ID(driver, "bot2-Msg1")
         driver.find_element_by_id("bot2-Msg1").click()
         function_module.log_to_file('Test_VFL_Module:test036_vfl_summary_report:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test036_vfl_summary_report:TEST COMPLETED"

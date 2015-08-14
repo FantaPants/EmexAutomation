@@ -167,6 +167,28 @@ def field_is_not_hidden(str):
 
 """Explicit Wait functions for use with controlling webdriver and for catching timeouts"""
 
+def wait_for_element_ID(driver, locator, time=10):
+    """Function used to Explicitly Wait for an element to be displayed. The Element is located
+    using its ID"""
+    try:
+        WebDriverWait(driver, time).until(lambda s: s.find_element(By.ID, locator).is_displayed())
+    except NoSuchElementException:
+        function_module.log_to_file('Test_VFL_Module:TIMEOUT:Failed to locate required ID element within requirement timeframe', 'FAILED')
+        print 'ERROR - TIMEOUT - Failed to locate required ID element within requirement timeframe'
+        #Send potential timeout email
+        return False
+    
+def wait_for_element_Link_Text(driver, locator, time=10):
+    """Function used to Explicitly Wait for an element to be displayed. The Element is located
+    using its ID"""
+    try:
+        WebDriverWait(driver, time).until(lambda s: s.find_element(By.LINK_TEXT, locator).is_displayed())
+    except NoSuchElementException:
+        function_module.log_to_file('Test_VFL_Module:TIMEOUT:Failed to locate required ID element within requirement timeframe', 'FAILED')
+        print 'ERROR - TIMEOUT - Failed to locate required ID element within requirement timeframe'
+        #Send potential timeout email
+        return False
+
 def wait_for_element_CSS(driver, locator, time=10):
     """Function used to Explicitly Wait for an element to be displayed. The Element is located
     using its CSS_SELECTOR"""
@@ -188,4 +210,15 @@ def wait_for_element_XPATH(driver, locator, time=10):
         print 'ERROR - TIMEOUT - Failed to locate required XPATH element within requirement timeframe'
         #Send potential timeout email
         return False
-                
+
+def wait_to_be_clickable_XPATH(driver, locator, time=10):
+    """Function used to Explicitly Wait for an element to be clickable. The Element is located
+    using its XPATH"""
+    try:
+        WebDriverWait(driver, time).until((EC.element_to_be_clickable(By.XPATH, locator)))
+    except ElementNotSelectableException:
+        function_module.log_to_file('Test_VFL_Module:TIMEOUT:Failed to locate clickable XPATH element', 'FAILED')
+        print 'ERROR - TIMEOUT - Failed to locate clickable XPATH element within requirement timeframe'
+        #Send potential timeout email
+        return False
+        

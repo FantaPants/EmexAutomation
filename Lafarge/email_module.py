@@ -10,7 +10,7 @@ from datetime import datetime
 
 """Set of fucntion designed to send emails"""
 
-def SummaryMail():
+def summary_mail():
     """Builds and sends a summary email of the latest Automation Test Run. Summary email comprises of
     standard message followed by contents of latest log from clients specific folder. All exports and
     produced during testing should also be attached"""
@@ -63,4 +63,39 @@ def SummaryMail():
     smtpObj.sendmail(sender, receiver, msg.as_string())
     smtpObj.quit()
 
+
+
+def error_mail(test_number, test_message, exception):
+    """Builds and error message email that is send when an assertion throws an exception during testing"""
+
+    #Define email content
+    date = datetime.utcnow().strftime('%d-%m-%Y')
+    client_name = client_variables.client_name
+    sender = 'support@emex.com'
+    receiver = 'qateam@emex.com'
+    subject = 'POTENTIAL ERROR FOUND IN ' + test_number + ' - CLIENT: ' + client_variables.client_name + ' - DATE: ' + date
+    subject_string = str(subject)
+    body_intro = 'During the latest Automated Test Run for ' + client_name + ' on: ' + date + '. An exception of type ' + exception + ' was thrown during ' + test_number + '.' 
+    body_main = test_message
+
+    #Create Message container
+    msg = MIMEMultipart()
+    msg['Subject'] = subject_string
+    msg['From'] = sender
+    msg['To'] = receiver
+      
+    #build body of email
+    body = """%s
+
+    %s"""% (body_intro, body_main)
+
+    #Record MIME type and attach into container
+    part1 = MIMEText(body, 'plain')
+    msg.attach(part1)
+
+    # Send the message via our own SMTP server, but don't include the
+    # envelope header.
+    smtpObj = smtplib.SMTP('192.168.2.225')
+    smtpObj.sendmail(sender, receiver, msg.as_string())
+    smtpObj.quit()
 
