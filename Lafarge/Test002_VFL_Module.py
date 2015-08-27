@@ -8,7 +8,7 @@ from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import NoAlertPresentException
 import unittest, time, datetime, re, os
-import client_variables, function_module, email_module
+import client_variables, function_module, email_module, common_page_objects, vfl_page_objects
 
     
 class Test_001_VFL_Forms(unittest.TestCase):
@@ -30,12 +30,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
-        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
-        driver.find_element_by_name("UserName").clear()
-        driver.find_element_by_name("UserName").send_keys(client_variables.username1)
-        driver.find_element_by_name("Password").clear()
-        driver.find_element_by_name("Password").send_keys(client_variables.pword1)
-        driver.find_element_by_css_selector("button.btn.btn-primary").click()
+        common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
         function_module.log_to_file('Test_VFL_Module:test001_add_new_VFL_record_test_details:Successfully logged in and started test')
         print "Logged in successfully"
         #Select the VFL Module
@@ -198,9 +193,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         function_module.log_to_file('Test_VFL_Module:test001_add_new_VFL_record_test_details:Successfully saved new VFL record')
         print "Successfully saved VFL Record and returned to list view"
         #Log out of the application
-        driver.find_element_by_css_selector("i.fa.fa-power-off").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1")
-        driver.find_element_by_id("bot2-Msg1").click()
+        common_page_objects.logout(driver)
         function_module.log_to_file('Test_VFL_Module:test001_add_new_VFL_record_test_details:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test001_add_new_VFL_record_test_details:TEST COMPLETED"
 
@@ -209,12 +202,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
-        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
-        driver.find_element_by_name("UserName").clear()
-        driver.find_element_by_name("UserName").send_keys(client_variables.username1)
-        driver.find_element_by_name("Password").clear()
-        driver.find_element_by_name("Password").send_keys(client_variables.pword1)
-        driver.find_element_by_css_selector("button.btn.btn-primary").click()
+        common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
         function_module.log_to_file('Test_VFL_Module:test002_edit_existing_vfl_record:Successfully logged in and started test')
         print "Logged in successfully"
         #Select the VFL Module
@@ -265,12 +253,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
-        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
-        driver.find_element_by_name("UserName").clear()
-        driver.find_element_by_name("UserName").send_keys(client_variables.username1)
-        driver.find_element_by_name("Password").clear()
-        driver.find_element_by_name("Password").send_keys(client_variables.pword1)
-        driver.find_element_by_css_selector("button.btn.btn-primary").click()
+        common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
         function_module.log_to_file('Test_VFL_Module:test003_add_edit_delete_safe_acts:Successfully logged in and started test')
         print "Logged in successfully"
         #Select the VFL Module
@@ -350,9 +333,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         function_module.wait_for_element_CSS(driver, "i.fa.fa-power-off", 20)
         print "Successfully saved VFL Record and returned to list view"
         #Log out of the application
-        driver.find_element_by_css_selector("i.fa.fa-power-off").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1", 20)
-        driver.find_element_by_id("bot2-Msg1").click()
+        common_page_objects.logout(driver)
         function_module.log_to_file('Test_VFL_Module:test003_add_edit_delete_safe_acts:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test003_add_edit_delete_safe_acts:TEST COMPLETED"
 
@@ -363,12 +344,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
-        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
-        driver.find_element_by_name("UserName").clear()
-        driver.find_element_by_name("UserName").send_keys(client_variables.username1)
-        driver.find_element_by_name("Password").clear()
-        driver.find_element_by_name("Password").send_keys(client_variables.pword1)
-        driver.find_element_by_css_selector("button.btn.btn-primary").click()
+        common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
         function_module.log_to_file('Test_VFL_Module:test004_add_edit_unsafe_acts:Successfully logged in and started test')
         print "Logged in successfully"
         #Select the VFL Module
@@ -429,9 +405,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         function_module.wait_for_element_CSS(driver, "i.fa.fa-power-off", 20)
         print "Successfully saved VFL Record and returned to list view"
         #Log out of the application
-        driver.find_element_by_css_selector("i.fa.fa-power-off").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1", 20)
-        driver.find_element_by_id("bot2-Msg1").click()
+        common_page_objects.logout(driver)
         function_module.log_to_file('Test_VFL_Module:test004_add_edit_unsafe_acts:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test004_add_edit_unsafe_acts:TEST COMPLETED"
 
@@ -440,12 +414,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
-        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
-        driver.find_element_by_name("UserName").clear()
-        driver.find_element_by_name("UserName").send_keys(client_variables.username1)
-        driver.find_element_by_name("Password").clear()
-        driver.find_element_by_name("Password").send_keys(client_variables.pword1)
-        driver.find_element_by_css_selector("button.btn.btn-primary").click()
+        common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
         function_module.log_to_file('Test_VFL_Module:test005_add_conversations:Successfully logged in and started test')
         print "Logged in successfully"
         #Select the VFL Module
@@ -491,9 +460,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         function_module.wait_for_element_CSS(driver, "i.fa.fa-power-off", 20)
         print "Successfully saved VFL Record and returned to list view"
         #Log out of the application
-        driver.find_element_by_css_selector("i.fa.fa-power-off").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1", 20)
-        driver.find_element_by_id("bot2-Msg1").click()
+        common_page_objects.logout(driver)
         function_module.log_to_file('Test_VFL_Module:test005_add_conversations:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test005_add_conversations:TEST COMPLETED"
 
@@ -503,12 +470,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
-        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
-        driver.find_element_by_name("UserName").clear()
-        driver.find_element_by_name("UserName").send_keys(client_variables.username1)
-        driver.find_element_by_name("Password").clear()
-        driver.find_element_by_name("Password").send_keys(client_variables.pword1)
-        driver.find_element_by_css_selector("button.btn.btn-primary").click()
+        common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
         function_module.log_to_file('Test_VFL_Module:test006_edit_conversations:Successfully logged in and started test')
         print "Logged in successfully"
         #Select the VFL Module
@@ -566,9 +528,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         function_module.wait_for_element_CSS(driver, "i.fa.fa-power-off", 20)
         print "Successfully saved VFL Record and returned to list view"
         #Log out of the application
-        driver.find_element_by_css_selector("i.fa.fa-power-off").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1", 20)
-        driver.find_element_by_id("bot2-Msg1").click()
+        common_page_objects.logout(driver)
         function_module.log_to_file('Test_VFL_Module:test006_edit_conversations:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test006_edit_conversations:TEST COMPLETED"
 
@@ -578,12 +538,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         self.driver.implicitly_wait(5)
         driver.get(self.base_url + "/")
         #Login to the application
-        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
-        driver.find_element_by_name("UserName").clear()
-        driver.find_element_by_name("UserName").send_keys(client_variables.username1)
-        driver.find_element_by_name("Password").clear()
-        driver.find_element_by_name("Password").send_keys(client_variables.pword1)
-        driver.find_element_by_css_selector("button.btn.btn-primary").click()
+        common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
         function_module.log_to_file('Test_VFL_Module:test007_delete_conversations:Successfully logged in and started test')
         print "Logged in successfully"
         #Select the VFL Module
@@ -624,9 +579,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         function_module.wait_for_element_CSS(driver, "i.fa.fa-power-off", 20)
         print "Successfully saved VFL Record and returned to list view"
         #Log out of the application
-        driver.find_element_by_css_selector("i.fa.fa-power-off").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1", 20)
-        driver.find_element_by_id("bot2-Msg1").click()
+        common_page_objects.logout(driver)
         function_module.log_to_file('Test_VFL_Module:test007_delete_conversations:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test007_delete_conversations:TEST COMPLETED"
 
@@ -638,12 +591,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
-        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
-        driver.find_element_by_name("UserName").clear()
-        driver.find_element_by_name("UserName").send_keys(client_variables.username1)
-        driver.find_element_by_name("Password").clear()
-        driver.find_element_by_name("Password").send_keys(client_variables.pword1)
-        driver.find_element_by_css_selector("button.btn.btn-primary").click()
+        common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
         function_module.log_to_file('Test_VFL_Module:test008_add_action:Successfully logged in and started test')
         print "Logged in successfully"
         #Select the VFL Module
@@ -783,9 +731,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         function_module.wait_for_element_CSS(driver, "i.fa.fa-power-off", 20)
         print "Successfully saved VFL Record and returned to list view"
         #Log out of the application
-        driver.find_element_by_css_selector("i.fa.fa-power-off").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1", 20)
-        driver.find_element_by_id("bot2-Msg1").click()
+        common_page_objects.logout(driver)
         function_module.log_to_file('Test_VFL_Module:test008_add_action:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test008_add_action:TEST COMPLETED"
 
@@ -794,12 +740,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
-        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
-        driver.find_element_by_name("UserName").clear()
-        driver.find_element_by_name("UserName").send_keys(client_variables.username1)
-        driver.find_element_by_name("Password").clear()
-        driver.find_element_by_name("Password").send_keys(client_variables.pword1)
-        driver.find_element_by_css_selector("button.btn.btn-primary").click()
+        common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
         function_module.log_to_file('Test_VFL_Module:test009_edit_action:Successfully logged in and started test')
         print "Logged in successfully"
         #Select the VFL Module
@@ -851,9 +792,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         function_module.wait_for_element_CSS(driver, "i.fa.fa-power-off", 20)
         print "Successfully saved VFL Record and returned to list view"
         #Log out of the application
-        driver.find_element_by_css_selector("i.fa.fa-power-off").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1", 20)
-        driver.find_element_by_id("bot2-Msg1").click()
+        common_page_objects.logout(driver)
         function_module.log_to_file('Test_VFL_Module:test009_edit_action:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test009_edit_action:TEST COMPLETED"
 
@@ -862,12 +801,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
-        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
-        driver.find_element_by_name("UserName").clear()
-        driver.find_element_by_name("UserName").send_keys(client_variables.username1)
-        driver.find_element_by_name("Password").clear()
-        driver.find_element_by_name("Password").send_keys(client_variables.pword1)
-        driver.find_element_by_css_selector("button.btn.btn-primary").click()
+        common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
         function_module.log_to_file('Test_VFL_Module:test010_delete_action:Successfully logged in and started test')
         print "Logged in successfully"
         #Select the VFL Module
@@ -908,9 +842,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         function_module.wait_for_element_CSS(driver, "i.fa.fa-power-off", 20)
         print "Successfully saved VFL Record and returned to list view"
         #Log out of the application
-        driver.find_element_by_css_selector("i.fa.fa-power-off").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1", 20)
-        driver.find_element_by_id("bot2-Msg1").click()
+        common_page_objects.logout(driver)
         function_module.log_to_file('Test_VFL_Module:test010_delete_action:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test010_delete_action:TEST COMPLETED"
 
@@ -922,12 +854,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
-        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
-        driver.find_element_by_name("UserName").clear()
-        driver.find_element_by_name("UserName").send_keys(client_variables.username1)
-        driver.find_element_by_name("Password").clear()
-        driver.find_element_by_name("Password").send_keys(client_variables.pword1)
-        driver.find_element_by_css_selector("button.btn.btn-primary").click()
+        common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
         function_module.log_to_file('Test_VFL_Module:test011_view_existing_vfl_record:Successfully logged in and started test')
         print "Logged in successfully"
         #Select the VFL Module
@@ -1061,9 +988,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         function_module.wait_for_element_CSS(driver, "i.fa.fa-power-off", 20)
         print "Successfully saved VFL Record and returned to list view"
         #Log out of the application
-        driver.find_element_by_css_selector("i.fa.fa-power-off").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1", 20)
-        driver.find_element_by_id("bot2-Msg1").click()
+        common_page_objects.logout(driver)
         function_module.log_to_file('Test_VFL_Module:test011_view_existing_vfl_record:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test011_view_existing_vfl_record:TEST COMPLETED"
 
@@ -1072,12 +997,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
-        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
-        driver.find_element_by_name("UserName").clear()
-        driver.find_element_by_name("UserName").send_keys(client_variables.username1)
-        driver.find_element_by_name("Password").clear()
-        driver.find_element_by_name("Password").send_keys(client_variables.pword1)
-        driver.find_element_by_css_selector("button.btn.btn-primary").click()
+        common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
         function_module.log_to_file('Test_VFL_Module:test012_delete_existing_vfl_record:Successfully logged in and started test')
         print "Logged in successfully"
         #Select the VFL Module
@@ -1105,9 +1025,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
             function_module.log_to_file('Test_VFL_Module:test012_delete_existing_vfl_record:Successfully deleted VFL Record', 'PASSED')
             print 'Asserted that VFL Record has been successfully deleted'
         #Log out of the application
-        driver.find_element_by_css_selector("i.fa.fa-power-off").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1", 20)
-        driver.find_element_by_id("bot2-Msg1").click()
+        common_page_objects.logout(driver)
         function_module.log_to_file('Test_VFL_Module:test012_delete_existing_vfl_record:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test012_delete_existing_vfl_record:TEST COMPLETED"
     
@@ -1134,12 +1052,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
-        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
-        driver.find_element_by_name("UserName").clear()
-        driver.find_element_by_name("UserName").send_keys(client_variables.username1)
-        driver.find_element_by_name("Password").clear()
-        driver.find_element_by_name("Password").send_keys(client_variables.pword1)
-        driver.find_element_by_css_selector("button.btn.btn-primary").click()
+        common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
         function_module.log_to_file('Test_VFL_Module:test013_verify_default_filters:Successfully logged in and started test')
         print "Logged in successfully"
         #Select the VFL Module
@@ -1184,9 +1097,7 @@ class Test_002_VFL_Main(unittest.TestCase):
             print 'Asserted that Participants field is automatically populated with current user'
         time.sleep(1)
         #Log out of the application
-        driver.find_element_by_css_selector("i.fa.fa-power-off").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1", 20)
-        driver.find_element_by_id("bot2-Msg1").click()
+        common_page_objects.logout(driver)
         function_module.log_to_file('Test_VFL_Module:test013_verify_default_filters:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test013_verify_default_filters:TEST COMPLETED"
 
@@ -1198,12 +1109,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
-        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
-        driver.find_element_by_name("UserName").clear()
-        driver.find_element_by_name("UserName").send_keys(client_variables.username1)
-        driver.find_element_by_name("Password").clear()
-        driver.find_element_by_name("Password").send_keys(client_variables.pword1)
-        driver.find_element_by_css_selector("button.btn.btn-primary").click()
+        common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
         function_module.log_to_file('Test_VFL_Module:test014_delete_multiple_VFL_records:Successfully logged in and started test')
         print "Logged in successfully"
         #Select the VFL Module
@@ -1277,9 +1183,7 @@ class Test_002_VFL_Main(unittest.TestCase):
             print amount_of_records
         print "Total number of Test VFL Records now = 0"
         #Log out of the application
-        driver.find_element_by_css_selector("i.fa.fa-power-off").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1")
-        driver.find_element_by_id("bot2-Msg1").click()
+        common_page_objects.logout(driver)
         function_module.log_to_file('Test_VFL_Module:test014_delete_multiple_VFL_records:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test014_delete_multiple_VFL_records:TEST COMPLETED"
 
@@ -1292,12 +1196,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
-        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
-        driver.find_element_by_name("UserName").clear()
-        driver.find_element_by_name("UserName").send_keys(client_variables.username1)
-        driver.find_element_by_name("Password").clear()
-        driver.find_element_by_name("Password").send_keys(client_variables.pword1)
-        driver.find_element_by_css_selector("button.btn.btn-primary").click()
+        common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
         function_module.log_to_file('Test_VFL_Module:test015_filter_by_date_range:Successfully logged in and started test')
         print "Logged in successfully"
         #Select the VFL Module
@@ -1372,9 +1271,7 @@ class Test_002_VFL_Main(unittest.TestCase):
             print 'Asserted that filtering by Date Range works as expected'
         time.sleep(1)
         #Log out of the application
-        driver.find_element_by_css_selector("i.fa.fa-power-off").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1")
-        driver.find_element_by_id("bot2-Msg1").click()
+        common_page_objects.logout(driver)
         function_module.log_to_file('Test_VFL_Module:test015_filter_by_date_range:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test015_filter_by_date_range:TEST COMPLETED"
 
@@ -1388,12 +1285,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
-        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
-        driver.find_element_by_name("UserName").clear()
-        driver.find_element_by_name("UserName").send_keys(client_variables.username1)
-        driver.find_element_by_name("Password").clear()
-        driver.find_element_by_name("Password").send_keys(client_variables.pword1)
-        driver.find_element_by_css_selector("button.btn.btn-primary").click()
+        common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
         function_module.log_to_file('Test_VFL_Module:test016_filter_by_workgroup_no_subgroups:Successfully logged in and started test')
         print "Logged in successfully"
         #Select the VFL Module
@@ -1474,9 +1366,7 @@ class Test_002_VFL_Main(unittest.TestCase):
             print 'Asserted that filtering by WorkGroup (No SubGroup) works as expected'
         time.sleep(1)
         #Log out of the application
-        driver.find_element_by_css_selector("i.fa.fa-power-off").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1")
-        driver.find_element_by_id("bot2-Msg1").click()
+        common_page_objects.logout(driver)
         function_module.log_to_file('Test_VFL_Module:test016_filter_by_workgroup_no_subgroups:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test016_filter_by_workgroup_no_subgroups:TEST COMPLETED"
 
@@ -1487,12 +1377,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
-        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
-        driver.find_element_by_name("UserName").clear()
-        driver.find_element_by_name("UserName").send_keys(client_variables.username1)
-        driver.find_element_by_name("Password").clear()
-        driver.find_element_by_name("Password").send_keys(client_variables.pword1)
-        driver.find_element_by_css_selector("button.btn.btn-primary").click()
+        common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
         function_module.log_to_file('Test_VFL_Module:test017_filter_by_workgroup_with_subgroups:Successfully logged in and started test')
         print "Logged in successfully"
         #Select the VFL Module
@@ -1531,9 +1416,7 @@ class Test_002_VFL_Main(unittest.TestCase):
             print 'Asserted that filtering by WorkGroup (With SubGroup) works as expected'
         time.sleep(1)
         #Log out of the application
-        driver.find_element_by_css_selector("i.fa.fa-power-off").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1")
-        driver.find_element_by_id("bot2-Msg1").click()
+        common_page_objects.logout(driver)
         function_module.log_to_file('Test_VFL_Module:test017_filter_by_workgroup_with_subgroups:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test017_filter_by_workgroup_with_subgroups:TEST COMPLETED"
 
@@ -1544,12 +1427,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
-        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
-        driver.find_element_by_name("UserName").clear()
-        driver.find_element_by_name("UserName").send_keys(client_variables.username1)
-        driver.find_element_by_name("Password").clear()
-        driver.find_element_by_name("Password").send_keys(client_variables.pword1)
-        driver.find_element_by_css_selector("button.btn.btn-primary").click()
+        common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
         function_module.log_to_file('Test_VFL_Module:test018_filter_by_location:Successfully logged in and started test')
         print "Logged in successfully"
         #Select the VFL Module
@@ -1584,9 +1462,7 @@ class Test_002_VFL_Main(unittest.TestCase):
             print 'Asserted that filtering by Location works as expected'
         time.sleep(1)
         #Log out of the application
-        driver.find_element_by_css_selector("i.fa.fa-power-off").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1")
-        driver.find_element_by_id("bot2-Msg1").click()
+        common_page_objects.logout(driver)
         function_module.log_to_file('Test_VFL_Module:test018_filter_by_location:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test018_filter_by_location:TEST COMPLETED"
 
@@ -1597,12 +1473,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
-        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
-        driver.find_element_by_name("UserName").clear()
-        driver.find_element_by_name("UserName").send_keys(client_variables.username1)
-        driver.find_element_by_name("Password").clear()
-        driver.find_element_by_name("Password").send_keys(client_variables.pword1)
-        driver.find_element_by_css_selector("button.btn.btn-primary").click()
+        common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
         function_module.log_to_file('Test_VFL_Module:test019_filter_by_business_unit:Successfully logged in and started test')
         print "Logged in successfully"
         #Select the VFL Module
@@ -1637,9 +1508,7 @@ class Test_002_VFL_Main(unittest.TestCase):
             print 'Asserted that filtering by Business Unit works as expected'
         time.sleep(1)
         #Log out of the application
-        driver.find_element_by_css_selector("i.fa.fa-power-off").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1")
-        driver.find_element_by_id("bot2-Msg1").click()
+        common_page_objects.logout(driver)
         function_module.log_to_file('Test_VFL_Module:test019_filter_by_business_unit:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test019_filter_by_business_unit:TEST COMPLETED"
 
@@ -1652,12 +1521,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
-        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
-        driver.find_element_by_name("UserName").clear()
-        driver.find_element_by_name("UserName").send_keys(client_variables.username2)
-        driver.find_element_by_name("Password").clear()
-        driver.find_element_by_name("Password").send_keys(client_variables.pword2)
-        driver.find_element_by_css_selector("button.btn.btn-primary").click()
+        common_page_objects.login(driver, client_variables.username2, client_variables.pword2)
         function_module.log_to_file('Test_VFL_Module:test020_filter_by_creator_or_participant:Successfully logged in (as User2) and started test')
         print "Logged in successfully"
         #Select the VFL Module
@@ -1891,9 +1755,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         print "Amount of VFL Records created by user2 = 0"
         print "Total number of Test VFL Records now = 6"
         #Log out of the application
-        driver.find_element_by_css_selector("i.fa.fa-power-off").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1")
-        driver.find_element_by_id("bot2-Msg1").click()
+        common_page_objects.logout(driver)
         function_module.log_to_file('Test_VFL_Module:test020_filter_by_creator_or_participant:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test020_filter_by_creator_or_participant:TEST COMPLETED"
 
@@ -1905,12 +1767,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
-        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
-        driver.find_element_by_name("UserName").clear()
-        driver.find_element_by_name("UserName").send_keys(client_variables.username1)
-        driver.find_element_by_name("Password").clear()
-        driver.find_element_by_name("Password").send_keys(client_variables.pword1)
-        driver.find_element_by_css_selector("button.btn.btn-primary").click()
+        common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
         function_module.log_to_file('Test_VFL_Module:test021_pagination:Successfully logged in and started test')
         print "Logged in successfully"
         #Select the VFL Module
@@ -2107,9 +1964,7 @@ class Test_002_VFL_Main(unittest.TestCase):
             print 'Asserted that we can successfully display 100 records'
         time.sleep(1)
         #Log out of the application
-        driver.find_element_by_css_selector("i.fa.fa-power-off").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1")
-        driver.find_element_by_id("bot2-Msg1").click()
+        common_page_objects.logout(driver)
         function_module.log_to_file('Test_VFL_Module:test021_delete_existing_vfl_record:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test021_delete_existing_vfl_record:TEST COMPLETED"
 
@@ -2119,12 +1974,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
-        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
-        driver.find_element_by_name("UserName").clear()
-        driver.find_element_by_name("UserName").send_keys(client_variables.username1)
-        driver.find_element_by_name("Password").clear()
-        driver.find_element_by_name("Password").send_keys(client_variables.pword1)
-        driver.find_element_by_css_selector("button.btn.btn-primary").click()
+        common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
         function_module.log_to_file('Test_VFL_Module:test022_tool_tips:Successfully logged in and started test')
         print "Logged in successfully"
         #Select the VFL Module
@@ -2174,9 +2024,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         print "Tool Tip for Export button is correct"
         function_module.log_to_file('Test_VFL_Module:test022_tool_tips:All Tool Tips are correct', 'PASSED')
         #Log out of the application
-        driver.find_element_by_css_selector("i.fa.fa-power-off").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1")
-        driver.find_element_by_id("bot2-Msg1").click()
+        common_page_objects.logout(driver)
         function_module.log_to_file('Test_VFL_Module:test022_tool_tips:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test022_tool_tips:TEST COMPLETED"
 
@@ -2189,12 +2037,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
-        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
-        driver.find_element_by_name("UserName").clear()
-        driver.find_element_by_name("UserName").send_keys(client_variables.username1)
-        driver.find_element_by_name("Password").clear()
-        driver.find_element_by_name("Password").send_keys(client_variables.pword1)
-        driver.find_element_by_css_selector("button.btn.btn-primary").click()
+        common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
         function_module.log_to_file('Test_VFL_Module:test023_creator_participant_rights:Successfully logged in (as User1) and started test')
         print "Logged in as User1 successfully"
         #Select the VFL Module
@@ -2218,18 +2061,11 @@ class Test_002_VFL_Main(unittest.TestCase):
         driver.find_element_by_XPATH("//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a").click()
         function_module.wait_for_element_CSS(driver, "i.fa.fa-power-off", 20)
         print "Successfully saved VFL Record and returned to list view"
-        driver.find_element_by_css_selector("i.fa.fa-power-off").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1")
-        driver.find_element_by_id("bot2-Msg1").click()
+        common_page_objects.logout(driver)
         time.sleep(1)
         print "Logged out of application as User 1"
         #Login as User2
-        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
-        driver.find_element_by_name("UserName").clear()
-        driver.find_element_by_name("UserName").send_keys(client_variables.username2)
-        driver.find_element_by_name("Password").clear()
-        driver.find_element_by_name("Password").send_keys(client_variables.pword2)
-        driver.find_element_by_css_selector("button.btn.btn-primary").click()
+        common_page_objects.login(driver, client_variables.username2, client_variables.pword2)
         function_module.log_to_file('Test_VFL_Module:test023_creator_participant_rights:Successfully logged in (as User2) and started test')
         print "Logged in as User2 successfully"
         #Select the VFL Module
@@ -2285,16 +2121,92 @@ class Test_002_VFL_Main(unittest.TestCase):
         time.sleep(1)
         function_module.log_to_file('Test_VFL_Module:test023_creator_participant_rights:Successfully verified limited permissions for non creators AND/OR participants', 'PASSED')
         #Log out of the application
-        driver.find_element_by_css_selector("i.fa.fa-power-off").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1")
-        driver.find_element_by_id("bot2-Msg1").click()
+        common_page_objects.logout(driver)
         function_module.log_to_file('Test_VFL_Module:test023_creator_participant_rights:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test023_creator_participant_rights:TEST COMPLETED"
 
-
-        """NOTE: test_024 is missing at the moment. This test will be responsible for testing the
-        functionality of the Show/Hide columns control. This control is a javascript control and I
-        need to first research how to locate javascript elements with webdriver"""
+    def test_024_vfl_show_hide_columns(self):
+        """Testing the VFL List View can have its columns both hidden and displayed"""
+        driver = self.driver
+        driver.get(self.base_url + "/")
+        #Login to the application
+        common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
+        function_module.log_to_file('Test_VFL_Module:test024_vfl_show_hide_columns:Successfully logged in and started test')
+        print "Logged in successfully"
+        #Select the VFL Module
+        function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
+        driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
+        print "Moved to VFL Module"
+        #define objects to locate column headers
+        function_module.wait_for_element_CSS(driver, ".dt-datetime.sorting_desc")
+        created_on_header = driver.find_element_by_css_selector(".dt-datetime.sorting_desc")
+        header_list = driver.find_elements_by_css_selector(".sorting_disabled")                          
+        conversations_header = header_list[1]
+        site_header = header_list[2]
+        participants_header = header_list[3]
+        creator_header = header_list[4]
+        comments_header = header_list[5]
+        #Select the Show Hide Columns dropdown and HIDE the Created On column
+        vfl_page_objects.click_show_hide_checkbox_css(driver, "li > label > input[type=\"checkbox\"]")
+        #Assert the Created On column has been successfully hidden
+        self.driver.implicitly_wait(0)
+        vfl_page_objects.column_hidden(driver, created_on_header, "Created On")
+        self.driver.implicitly_wait(30)
+        #Select the Show Hide Columns dropdown and UNHIDE the Created On column
+        vfl_page_objects.click_show_hide_checkbox_css(driver, "li > label > input[type=\"checkbox\"]")
+        #Select the Show Hide Columns dropdown and HIDE the Conversations column
+        vfl_page_objects.click_show_hide_checkbox_xpath(driver, "(//input[@type='checkbox'])[5]")
+        #Assert the conversations column has been successfully hidden
+        self.driver.implicitly_wait(0)
+        vfl_page_objects.column_hidden(driver, conversations_header, "Conversations")
+        self.driver.implicitly_wait(30)
+        #Select the Show Hide Columns dropdown and UNHIDE the Conversations column
+        vfl_page_objects.click_show_hide_checkbox_xpath(driver, "(//input[@type='checkbox'])[5]")
+        #Select the Show Hide Columns dropdown and HIDE the site column
+        vfl_page_objects.click_show_hide_checkbox_xpath(driver, "(//input[@type='checkbox'])[6]")
+        #Assert the site column has been successfully hidden
+        self.driver.implicitly_wait(0)
+        vfl_page_objects.column_hidden(driver, site_header, "Site")
+        self.driver.implicitly_wait(30)
+        #Select the Show Hide Columns dropdown and UNHIDE the Site column
+        vfl_page_objects.click_show_hide_checkbox_xpath(driver, "(//input[@type='checkbox'])[6]")
+        #Select the Show Hide Columns dropdown and HIDE the Participants column
+        vfl_page_objects.click_show_hide_checkbox_xpath(driver, "(//input[@type='checkbox'])[7]")
+        #Assert the Participants column has been successfully hidden
+        self.driver.implicitly_wait(0)
+        vfl_page_objects.column_hidden(driver, participants_header, "Participants")
+        self.driver.implicitly_wait(30)
+        #Select the Show Hide Columns dropdown and UNHIDE the Participants column
+        vfl_page_objects.click_show_hide_checkbox_xpath(driver, "(//input[@type='checkbox'])[7]")
+        #Select the Show Hide Columns dropdown and HIDE the Creator column
+        vfl_page_objects.click_show_hide_checkbox_xpath(driver, "(//input[@type='checkbox'])[8]")
+        #Assert the Creator column has been successfully hidden
+        self.driver.implicitly_wait(0)
+        vfl_page_objects.column_hidden(driver, creator_header, "Creator")
+        self.driver.implicitly_wait(30)
+        #Select the Show Hide Columns dropdown and UNHIDE the Creator column
+        vfl_page_objects.click_show_hide_checkbox_xpath(driver, "(//input[@type='checkbox'])[8]")
+        #Select the Show Hide Columns dropdown and HIDE the Comments column
+        vfl_page_objects.click_show_hide_checkbox_xpath(driver, "(//input[@type='checkbox'])[9]")
+        #Assert the Comments column has been successfully hidden
+        self.driver.implicitly_wait(0)
+        vfl_page_objects.column_hidden(driver, comments_header, "Comments")
+        self.driver.implicitly_wait(30)
+        #Select the Show Hide Columns dropdown and UNHIDE the Comments column
+        vfl_page_objects.click_show_hide_checkbox_xpath(driver, "(//input[@type='checkbox'])[9]")
+        #Capture a screenshot to ensure list view has not been corrupted due to hiding & displaying columns
+        driver.get_screenshot_as_file('V:/QA/Automation/Automation_Resources/Output/show_hide_columns.png')
+        function_module.log_to_file('Test_VFL_Module:test024_vfl_show_hide_columns:Successfully took a screenshot of list view')
+        time.sleep(3)
+        print "took screenshot and saved to output folder"
+        #Move screenshot into client specific folder
+        function_module.move_file()
+        function_module.log_to_file('Test_VFL_Module:test024_vfl_show_hide_columns:Successfully moved screenshot of list view into client specific folder')
+        time.sleep(2)
+        #Log out of the application
+        common_page_objects.logout(driver)
+        function_module.log_to_file('Test_VFL_Module:test024_vfl_show_hide_columns:TEST COMPLETED', 'PASSED')
+        print "Test_VFL_Module:test024_vfl_show_hide_columns:TEST COMPLETED"
         
     def tearDown(self):
         """Standard test tear down method"""
@@ -2321,12 +2233,7 @@ class Test_003_VFL_Settings(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
-        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
-        driver.find_element_by_name("UserName").clear()
-        driver.find_element_by_name("UserName").send_keys(client_variables.username1)
-        driver.find_element_by_name("Password").clear()
-        driver.find_element_by_name("Password").send_keys(client_variables.pword1)
-        driver.find_element_by_css_selector("button.btn.btn-primary").click()
+        common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
         function_module.log_to_file('Test_VFL_Module:test025_add_year:Successfully logged in and started test')
         print "Logged in successfully"
         #Select the VFL Module
@@ -2509,9 +2416,7 @@ class Test_003_VFL_Settings(unittest.TestCase):
         time.sleep(1)
         print "Closed VFL Settings dialog box"
         #Log out of the application
-        driver.find_element_by_css_selector("i.fa.fa-power-off").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1")
-        driver.find_element_by_id("bot2-Msg1").click()
+        common_page_objects.logout(driver)
         function_module.log_to_file('Test_VFL_Module:test025_add_year:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test025_add_year:TEST COMPLETED"
 
@@ -2522,12 +2427,7 @@ class Test_003_VFL_Settings(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
-        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
-        driver.find_element_by_name("UserName").clear()
-        driver.find_element_by_name("UserName").send_keys(client_variables.username1)
-        driver.find_element_by_name("Password").clear()
-        driver.find_element_by_name("Password").send_keys(client_variables.pword1)
-        driver.find_element_by_css_selector("button.btn.btn-primary").click()
+        common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
         function_module.log_to_file('Test_VFL_Module:test026_update_year:Successfully logged in and started test')
         print "Logged in successfully"
         #Select the VFL Module
@@ -2624,9 +2524,7 @@ class Test_003_VFL_Settings(unittest.TestCase):
         time.sleep(1)
         print "Closed VFL Settings dialog box"
         #Log out of the application
-        driver.find_element_by_css_selector("i.fa.fa-power-off").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1")
-        driver.find_element_by_id("bot2-Msg1").click()
+        common_page_objects.logout(driver)
         function_module.log_to_file('Test_VFL_Module:test026_update_year:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test026_update_year:TEST COMPLETED"
 
@@ -2637,12 +2535,7 @@ class Test_003_VFL_Settings(unittest.TestCase):
         self.driver.implicitly_wait(5)
         driver.get(self.base_url + "/")
         #Login to the application
-        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
-        driver.find_element_by_name("UserName").clear()
-        driver.find_element_by_name("UserName").send_keys(client_variables.username1)
-        driver.find_element_by_name("Password").clear()
-        driver.find_element_by_name("Password").send_keys(client_variables.pword1)
-        driver.find_element_by_css_selector("button.btn.btn-primary").click()
+        common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
         function_module.log_to_file('Test_VFL_Module:test027_delete_year:Successfully logged in and started test')
         print "Logged in successfully"
         #Select the VFL Module
@@ -2679,9 +2572,7 @@ class Test_003_VFL_Settings(unittest.TestCase):
         time.sleep(1)
         print "Closed VFL Settings dialog box"
         #Log out of the application
-        driver.find_element_by_css_selector("i.fa.fa-power-off").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1")
-        driver.find_element_by_id("bot2-Msg1").click()
+        common_page_objects.logout(driver)
         function_module.log_to_file('Test_VFL_Module:test027_delete_year:TEST COMPLETED', 'PASSED')
         print 'Test_VFL_Module:test027_delete_year:TEST COMPLETED'
 
@@ -2713,14 +2604,9 @@ class Test_004_VFL_Export(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
-        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
-        driver.find_element_by_name("UserName").clear()
-        driver.find_element_by_name("UserName").send_keys(client_variables.username1)
-        driver.find_element_by_name("Password").clear()
-        driver.find_element_by_name("Password").send_keys(client_variables.pword1)
-        driver.find_element_by_css_selector("button.btn.btn-primary").click()
+        common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
         function_module.log_to_file('Test_VFL_Module:test028_export_all_excel:Successfully logged in and started test')
-        #time.sleep(5)
+        time.sleep(5)
         print "Logged in successfully"
         #Select the VFL Module
         #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
@@ -2746,9 +2632,7 @@ class Test_004_VFL_Export(unittest.TestCase):
         time.sleep(2)
         print "Moved file into client specific folder"
         #Log out of the application
-        driver.find_element_by_css_selector("i.fa.fa-power-off").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1")
-        driver.find_element_by_id("bot2-Msg1").click()
+        common_page_objects.logout(driver)
         function_module.log_to_file('Test_VFL_Module:test028_export_all_excel:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test028_export_all_excel:TEST COMPLETED"
 
@@ -2759,12 +2643,7 @@ class Test_004_VFL_Export(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
-        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
-        driver.find_element_by_name("UserName").clear()
-        driver.find_element_by_name("UserName").send_keys(client_variables.username1)
-        driver.find_element_by_name("Password").clear()
-        driver.find_element_by_name("Password").send_keys(client_variables.pword1)
-        driver.find_element_by_css_selector("button.btn.btn-primary").click()
+        common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
         function_module.log_to_file('Test_VFL_Module:test029_export_current_page_excel:Successfully logged in and started test')
         time.sleep(5)
         print "Logged in successfully"
@@ -2790,9 +2669,7 @@ class Test_004_VFL_Export(unittest.TestCase):
         time.sleep(2)
         print "Moved file into client specific folder"
         #Log out of the application
-        driver.find_element_by_css_selector("i.fa.fa-power-off").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1")
-        driver.find_element_by_id("bot2-Msg1").click()
+        common_page_objects.logout(driver)
         function_module.log_to_file('Test_VFL_Module:test029_export_current_page_excel:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test029_export_current_page_excel:TEST COMPLETED"
 
@@ -2803,12 +2680,7 @@ class Test_004_VFL_Export(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
-        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
-        driver.find_element_by_name("UserName").clear()
-        driver.find_element_by_name("UserName").send_keys(client_variables.username1)
-        driver.find_element_by_name("Password").clear()
-        driver.find_element_by_name("Password").send_keys(client_variables.pword1)
-        driver.find_element_by_css_selector("button.btn.btn-primary").click()
+        common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
         function_module.log_to_file('Test_VFL_Module:test030_export_selected_rows_excel:Successfully logged in and started test')
         time.sleep(5)
         print "Logged in successfully"
@@ -2839,9 +2711,7 @@ class Test_004_VFL_Export(unittest.TestCase):
         time.sleep(2)
         print "Moved file into client specific folder"
         #Log out of the application
-        driver.find_element_by_css_selector("i.fa.fa-power-off").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1")
-        driver.find_element_by_id("bot2-Msg1").click()
+        common_page_objects.logout(driver)
         function_module.log_to_file('Test_VFL_Module:test030_export_selected_rows_excel:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test030_export_selected_rows_excel:TEST COMPLETED"
 
@@ -2852,12 +2722,7 @@ class Test_004_VFL_Export(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
-        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
-        driver.find_element_by_name("UserName").clear()
-        driver.find_element_by_name("UserName").send_keys(client_variables.username1)
-        driver.find_element_by_name("Password").clear()
-        driver.find_element_by_name("Password").send_keys(client_variables.pword1)
-        driver.find_element_by_css_selector("button.btn.btn-primary").click()
+        common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
         function_module.log_to_file('Test_VFL_Module:test031_export_all_csv:Successfully logged in and started test')
         time.sleep(5)
         print "Logged in successfully"
@@ -2885,9 +2750,7 @@ class Test_004_VFL_Export(unittest.TestCase):
         time.sleep(2)
         print "Moved file into client specific folder"
         #Log out of the application
-        driver.find_element_by_css_selector("i.fa.fa-power-off").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1")
-        driver.find_element_by_id("bot2-Msg1").click()
+        common_page_objects.logout(driver)
         function_module.log_to_file('Test_VFL_Module:test031_export_all_csv:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test031_export_all_csv:TEST COMPLETED" 
 
@@ -2898,12 +2761,7 @@ class Test_004_VFL_Export(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
-        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
-        driver.find_element_by_name("UserName").clear()
-        driver.find_element_by_name("UserName").send_keys(client_variables.username1)
-        driver.find_element_by_name("Password").clear()
-        driver.find_element_by_name("Password").send_keys(client_variables.pword1)
-        driver.find_element_by_css_selector("button.btn.btn-primary").click()
+        common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
         function_module.log_to_file('Test_VFL_Module:test032_export_current_page_csv:Successfully logged in and started test')
         time.sleep(5)
         print "Logged in successfully"
@@ -2929,9 +2787,7 @@ class Test_004_VFL_Export(unittest.TestCase):
         time.sleep(2)
         print "Moved file into client specific folder"
         #Log out of the application
-        driver.find_element_by_css_selector("i.fa.fa-power-off").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1")
-        driver.find_element_by_id("bot2-Msg1").click()
+        common_page_objects.logout(driver)
         function_module.log_to_file('Test_VFL_Module:test032_export_current_page_csv:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test032_export_current_page_csv:TEST COMPLETED"
 
@@ -2942,12 +2798,7 @@ class Test_004_VFL_Export(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
-        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
-        driver.find_element_by_name("UserName").clear()
-        driver.find_element_by_name("UserName").send_keys(client_variables.username1)
-        driver.find_element_by_name("Password").clear()
-        driver.find_element_by_name("Password").send_keys(client_variables.pword1)
-        driver.find_element_by_css_selector("button.btn.btn-primary").click()
+        common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
         function_module.log_to_file('Test_VFL_Module:test033_export_selected_rows_csv:Successfully logged in and started test')
         time.sleep(5)
         print "Logged in successfully"
@@ -2978,9 +2829,7 @@ class Test_004_VFL_Export(unittest.TestCase):
         time.sleep(2)
         print "Moved file into client specific folder"
         #Log out of the application
-        driver.find_element_by_css_selector("i.fa.fa-power-off").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1")
-        driver.find_element_by_id("bot2-Msg1").click()
+        common_page_objects.logout(driver)
         function_module.log_to_file('Test_VFL_Module:test033_export_selected_rows_csv:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test033_export_selected_rows_csv:TEST COMPLETED"
     
@@ -3012,12 +2861,7 @@ class Test_005_VFL_Reports(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
-        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
-        driver.find_element_by_name("UserName").clear()
-        driver.find_element_by_name("UserName").send_keys(client_variables.username1)
-        driver.find_element_by_name("Password").clear()
-        driver.find_element_by_name("Password").send_keys(client_variables.pword1)
-        driver.find_element_by_css_selector("button.btn.btn-primary").click()
+        common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
         function_module.log_to_file('Test_VFL_Module:test034_vfl_activity_summary_report_no_subgroups:Successfully logged in and started test')
         time.sleep(5)
         print "Logged in successfully"
@@ -3081,9 +2925,7 @@ class Test_005_VFL_Reports(unittest.TestCase):
         time.sleep(2)
         print "Moved file into client specific folder"
         #Log out of the application
-        driver.find_element_by_css_selector("i.fa.fa-power-off").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1")
-        driver.find_element_by_id("bot2-Msg1").click()
+        common_page_objects.logout(driver)
         function_module.log_to_file('Test_VFL_Module:test034_vfl_activity_summary_report_no_subgroups:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test034_vfl_activity_summary_report_no_subgroups:TEST COMPLETED"
 
@@ -3094,12 +2936,7 @@ class Test_005_VFL_Reports(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
-        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
-        driver.find_element_by_name("UserName").clear()
-        driver.find_element_by_name("UserName").send_keys(client_variables.username1)
-        driver.find_element_by_name("Password").clear()
-        driver.find_element_by_name("Password").send_keys(client_variables.pword1)
-        driver.find_element_by_css_selector("button.btn.btn-primary").click()
+        common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
         function_module.log_to_file('Test_VFL_Module:test035_vfl_activity_summary_report_with_subgroups:Successfully logged in and started test')
         time.sleep(5)
         print "Logged in successfully"
@@ -3165,9 +3002,7 @@ class Test_005_VFL_Reports(unittest.TestCase):
         time.sleep(2)
         print "Moved file into client specific folder"
         #Log out of the application
-        driver.find_element_by_css_selector("i.fa.fa-power-off").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1")
-        driver.find_element_by_id("bot2-Msg1").click()
+        common_page_objects.logout(driver)
         function_module.log_to_file('Test_VFL_Module:test035_vfl_activity_summary_report_with_subgroups:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test035_vfl_activity_summary_report_with_subgroups:TEST COMPLETED"
 
@@ -3177,12 +3012,7 @@ class Test_005_VFL_Reports(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
-        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
-        driver.find_element_by_name("UserName").clear()
-        driver.find_element_by_name("UserName").send_keys(client_variables.username1)
-        driver.find_element_by_name("Password").clear()
-        driver.find_element_by_name("Password").send_keys(client_variables.pword1)
-        driver.find_element_by_css_selector("button.btn.btn-primary").click()
+        common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
         function_module.log_to_file('Test_VFL_Module:test036_vfl_summary_report:Successfully logged in and started test')
         time.sleep(5)
         print "Logged in successfully"
@@ -3293,9 +3123,7 @@ class Test_005_VFL_Reports(unittest.TestCase):
         #Log out of the application
         driver.switch_to_window(driver.window_handles[0])
         time.sleep(2)
-        driver.find_element_by_css_selector("i.fa.fa-power-off").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1")
-        driver.find_element_by_id("bot2-Msg1").click()
+        common_page_objects.logout(driver)
         function_module.log_to_file('Test_VFL_Module:test036_vfl_summary_report:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test036_vfl_summary_report:TEST COMPLETED"
     

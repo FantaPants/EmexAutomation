@@ -2,11 +2,12 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import unittest, time, datetime, re, os, shutil, zipfile, glob, client_variables
+import unittest, time, datetime, re, os, shutil, zipfile, glob
+import client_variables, email_module
 from datetime import date
 from datetime import datetime
 
-"""This module contains a set of custom built modules that are designed to be imported
+"""This module contains a set of custom built functions that are designed to be imported
 and used throughout all test modules"""
 
 """Set of functions used to return dates required for use in other
@@ -175,7 +176,7 @@ def wait_for_element_ID(driver, locator, time=10):
     except NoSuchElementException:
         function_module.log_to_file('Test_VFL_Module:TIMEOUT:Failed to locate required ID element within requirement timeframe', 'FAILED')
         print 'ERROR - TIMEOUT - Failed to locate required ID element within requirement timeframe'
-        #Send potential timeout email
+        email_module.wait_error_mail('ID', locator, 'NoSuchElementException')
         return False
     
 def wait_for_element_Link_Text(driver, locator, time=10):
@@ -186,7 +187,7 @@ def wait_for_element_Link_Text(driver, locator, time=10):
     except NoSuchElementException:
         function_module.log_to_file('Test_VFL_Module:TIMEOUT:Failed to locate required ID element within requirement timeframe', 'FAILED')
         print 'ERROR - TIMEOUT - Failed to locate required ID element within requirement timeframe'
-        #Send potential timeout email
+        email_module.wait_error_mail('LINK TEXT', locator, 'NoSuchElementException')
         return False
 
 def wait_for_element_CSS(driver, locator, time=10):
@@ -197,7 +198,7 @@ def wait_for_element_CSS(driver, locator, time=10):
     except NoSuchElementException:
         function_module.log_to_file('Test_VFL_Module:TIMEOUT:Failed to locate required CSS element within requirement timeframe', 'FAILED')
         print 'ERROR - TIMEOUT - Failed to locate required CSS element within requirement timeframe'
-        #Send potential timeout email
+        email_module.wait_error_mail('CSS SELECTOR', locator, 'NoSuchElementException')
         return False
 
 def wait_for_element_XPATH(driver, locator, time=10):
@@ -208,7 +209,7 @@ def wait_for_element_XPATH(driver, locator, time=10):
     except NoSuchElementException:
         function_module.log_to_file('Test_VFL_Module:TIMEOUT:Failed to locate required XPATH element within requirement timeframe', 'FAILED')
         print 'ERROR - TIMEOUT - Failed to locate required XPATH element within requirement timeframe'
-        #Send potential timeout email
+        email_module.wait_error_mail('XPATH', locator, 'NoSuchElementException')
         return False
 
 def wait_to_be_clickable_XPATH(driver, locator, time=10):
@@ -219,6 +220,8 @@ def wait_to_be_clickable_XPATH(driver, locator, time=10):
     except ElementNotSelectableException:
         function_module.log_to_file('Test_VFL_Module:TIMEOUT:Failed to locate clickable XPATH element', 'FAILED')
         print 'ERROR - TIMEOUT - Failed to locate clickable XPATH element within requirement timeframe'
-        #Send potential timeout email
+        email_module.wait_error_mail('XPATH', locator, 'ElementNotSelectableException')
         return False
-        
+
+
+   

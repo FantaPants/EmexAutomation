@@ -99,3 +99,32 @@ def error_mail(test_number, test_message, exception):
     smtpObj.sendmail(sender, receiver, msg.as_string())
     smtpObj.quit()
 
+
+def wait_error_mail(locator_type, locator, exception):
+    """Builds and error message email that is send when a Wait for Element Verification fails"""
+
+    #Define email content
+    date = datetime.utcnow().strftime('%d-%m-%Y')
+    client_name = client_variables.client_name
+    sender = 'support@emex.com'
+    receiver = 'qateam@emex.com'
+    subject = 'TIMEOUT WAITING FOR ' + locator_type + ' LOCATOR - CLIENT: ' + client_variables.client_name + ' - DATE: ' + date
+    subject_string = str(subject)
+    body = 'During the latest Automated Test Run for ' + client_name + ' on: ' + date + '. An exception of type ' +exception+ ', was thrown while waiting for the follow element to load:' + locator 
+
+    #Create Message container
+    msg = MIMEMultipart()
+    msg['Subject'] = subject_string
+    msg['From'] = sender
+    msg['To'] = receiver    
+
+    #Record MIME type and attach into container
+    part1 = MIMEText(body, 'plain')
+    msg.attach(part1)
+
+    # Send the message via our own SMTP server, but don't include the
+    # envelope header.
+    smtpObj = smtplib.SMTP('192.168.2.225')
+    smtpObj.sendmail(sender, receiver, msg.as_string())
+    smtpObj.quit()
+
