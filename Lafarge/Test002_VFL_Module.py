@@ -2058,7 +2058,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         driver.find_element_by_id("btnNextSubmit").click()
         function_module.wait_for_element_XPATH(driver, "//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a", 20)
         print "Moved to Acts Tab"
-        driver.find_element_by_XPATH("//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a").click()
+        driver.find_element_by_xpath("//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a").click()
         function_module.wait_for_element_CSS(driver, "i.fa.fa-power-off", 20)
         print "Successfully saved VFL Record and returned to list view"
         common_page_objects.logout(driver)
@@ -2134,9 +2134,11 @@ class Test_002_VFL_Main(unittest.TestCase):
         function_module.log_to_file('Test_VFL_Module:test024_vfl_show_hide_columns:Successfully logged in and started test')
         print "Logged in successfully"
         #Select the VFL Module
-        function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
+        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
-        print "Moved to VFL Module"
+        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60)
+        print "Moved to VFL Module" 
         #define objects to locate column headers
         function_module.wait_for_element_CSS(driver, ".dt-datetime.sorting_desc")
         created_on_header = driver.find_element_by_css_selector(".dt-datetime.sorting_desc")
@@ -2147,53 +2149,55 @@ class Test_002_VFL_Main(unittest.TestCase):
         creator_header = header_list[4]
         comments_header = header_list[5]
         #Select the Show Hide Columns dropdown and HIDE the Created On column
+        #vfl_page_objects.click_show_hide_checkbox_xpath(driver, "(//*[@class='ColVis_collection']/li[1]/label/input")
         vfl_page_objects.click_show_hide_checkbox_css(driver, "li > label > input[type=\"checkbox\"]")
         #Assert the Created On column has been successfully hidden
         self.driver.implicitly_wait(0)
         vfl_page_objects.column_hidden(driver, created_on_header, "Created On")
         self.driver.implicitly_wait(30)
         #Select the Show Hide Columns dropdown and UNHIDE the Created On column
+        #vfl_page_objects.click_show_hide_checkbox_xpath(driver, "(//*[@class='ColVis_collection']/li[1]/label/input")
         vfl_page_objects.click_show_hide_checkbox_css(driver, "li > label > input[type=\"checkbox\"]")
         #Select the Show Hide Columns dropdown and HIDE the Conversations column
-        vfl_page_objects.click_show_hide_checkbox_xpath(driver, "(//input[@type='checkbox'])[5]")
+        vfl_page_objects.click_show_hide_checkbox_xpath(driver, "(//input[@type='checkbox'])[14]")
         #Assert the conversations column has been successfully hidden
         self.driver.implicitly_wait(0)
         vfl_page_objects.column_hidden(driver, conversations_header, "Conversations")
         self.driver.implicitly_wait(30)
         #Select the Show Hide Columns dropdown and UNHIDE the Conversations column
-        vfl_page_objects.click_show_hide_checkbox_xpath(driver, "(//input[@type='checkbox'])[5]")
+        vfl_page_objects.click_show_hide_checkbox_xpath(driver, "(//input[@type='checkbox'])[14]")
         #Select the Show Hide Columns dropdown and HIDE the site column
-        vfl_page_objects.click_show_hide_checkbox_xpath(driver, "(//input[@type='checkbox'])[6]")
+        vfl_page_objects.click_show_hide_checkbox_xpath(driver, "(//input[@type='checkbox'])[15]")
         #Assert the site column has been successfully hidden
         self.driver.implicitly_wait(0)
         vfl_page_objects.column_hidden(driver, site_header, "Site")
         self.driver.implicitly_wait(30)
         #Select the Show Hide Columns dropdown and UNHIDE the Site column
-        vfl_page_objects.click_show_hide_checkbox_xpath(driver, "(//input[@type='checkbox'])[6]")
+        vfl_page_objects.click_show_hide_checkbox_xpath(driver, "(//input[@type='checkbox'])[15]")
         #Select the Show Hide Columns dropdown and HIDE the Participants column
-        vfl_page_objects.click_show_hide_checkbox_xpath(driver, "(//input[@type='checkbox'])[7]")
+        vfl_page_objects.click_show_hide_checkbox_xpath(driver, "(//input[@type='checkbox'])[16]")
         #Assert the Participants column has been successfully hidden
         self.driver.implicitly_wait(0)
         vfl_page_objects.column_hidden(driver, participants_header, "Participants")
         self.driver.implicitly_wait(30)
         #Select the Show Hide Columns dropdown and UNHIDE the Participants column
-        vfl_page_objects.click_show_hide_checkbox_xpath(driver, "(//input[@type='checkbox'])[7]")
+        vfl_page_objects.click_show_hide_checkbox_xpath(driver, "(//input[@type='checkbox'])[16]")
         #Select the Show Hide Columns dropdown and HIDE the Creator column
-        vfl_page_objects.click_show_hide_checkbox_xpath(driver, "(//input[@type='checkbox'])[8]")
+        vfl_page_objects.click_show_hide_checkbox_xpath(driver, "(//input[@type='checkbox'])[17]")
         #Assert the Creator column has been successfully hidden
         self.driver.implicitly_wait(0)
         vfl_page_objects.column_hidden(driver, creator_header, "Creator")
         self.driver.implicitly_wait(30)
         #Select the Show Hide Columns dropdown and UNHIDE the Creator column
-        vfl_page_objects.click_show_hide_checkbox_xpath(driver, "(//input[@type='checkbox'])[8]")
+        vfl_page_objects.click_show_hide_checkbox_xpath(driver, "(//input[@type='checkbox'])[17]")
         #Select the Show Hide Columns dropdown and HIDE the Comments column
-        vfl_page_objects.click_show_hide_checkbox_xpath(driver, "(//input[@type='checkbox'])[9]")
+        vfl_page_objects.click_show_hide_checkbox_xpath(driver, "(//input[@type='checkbox'])[18]")
         #Assert the Comments column has been successfully hidden
         self.driver.implicitly_wait(0)
         vfl_page_objects.column_hidden(driver, comments_header, "Comments")
         self.driver.implicitly_wait(30)
         #Select the Show Hide Columns dropdown and UNHIDE the Comments column
-        vfl_page_objects.click_show_hide_checkbox_xpath(driver, "(//input[@type='checkbox'])[9]")
+        vfl_page_objects.click_show_hide_checkbox_xpath(driver, "(//input[@type='checkbox'])[18]")
         #Capture a screenshot to ensure list view has not been corrupted due to hiding & displaying columns
         driver.get_screenshot_as_file('V:/QA/Automation/Automation_Resources/Output/show_hide_columns.png')
         function_module.log_to_file('Test_VFL_Module:test024_vfl_show_hide_columns:Successfully took a screenshot of list view')

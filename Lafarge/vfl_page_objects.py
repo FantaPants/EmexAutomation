@@ -23,6 +23,7 @@ def click_show_hide_checkbox_xpath(driver, locator):
     main.click()
     time.sleep(2)
 
+
 def click_show_hide_checkbox_css(driver, locator):
     """function opens the Show Hide Columns object and selects a checkbox using a CSS locator"""
     function_module.wait_for_element_XPATH(driver, "//div[@id='dtVFL_wrapper']/div/div/button")
