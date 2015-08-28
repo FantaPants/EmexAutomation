@@ -121,20 +121,24 @@ def zip_output():
 
 """Verification functions to use in Test Scripts when using an assertion would be overkill"""
 
-def field_is_mandatory(str):
+def field_is_mandatory(driver, locator):
     """Function used for checking that fields that use aria-required parameter are correctly set to
     mandatory as expected. This verification can be used to warn the tester when the field is
     incorrectly configured, but won't disturb the flow of the overall test."""
-    if str == 'true':
+    elem = driver.find_element_by_css_selector(locator)
+    is_mandatory = elem.get_attribute("aria-required")
+    if is_mandatory == 'true':
         print "Mandatory field = true"
     else:
         log_to_file('Mandatory field test failed', 'WARNING')
 
-def field_is_read_only(str):
+def field_is_read_only(driver, locator):
     """Function used for checking that fields that use disabled parameter are correctly set to
     read only as expected. This verification can be used to warn the tester when the field is
     incorrectly configured, but won't disturb the flow of the overall test."""
-    if str == 'true':
+    elem = driver.find_element_by_css_selector(locator)
+    is_disabled = elem.get_attribute("disabled")
+    if is_disabled == 'true':
         print "Read Only field = true"
     else:
         log_to_file('Read Only field test failed', 'WARNING')

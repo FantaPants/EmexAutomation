@@ -34,51 +34,36 @@ class Test_001_VFL_Forms(unittest.TestCase):
         function_module.log_to_file('Test_VFL_Module:test001_add_new_VFL_record_test_details:Successfully logged in and started test')
         print "Logged in successfully"
         #Select the VFL Module
+        #vfl_page_objects.open_vfl_module(driver)
         function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
         driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
         print "Moved to VFL Module"
         #Choose to add a new VFL Record
-        function_module.wait_for_element_CSS(driver, "i.glyphicon.glyphicon-plus", 60)
-        driver.find_element_by_css_selector("i.glyphicon.glyphicon-plus").click()
+        vfl_page_objects.add_new_vfl_record(driver)
         print "Found new VFL button successfully"
         #Verify Due Date is Mandatory
-        elem = driver.find_element_by_css_selector("#VflDate")
-        date_mandatory = elem.get_attribute("aria-required")
-        function_module.field_is_mandatory(date_mandatory)
+        function_module.field_is_mandatory(driver, "#VflDate")
         #Verify WorkGroup is Mandatory
-        elem = driver.find_element_by_css_selector("#WorkGroup")
-        workgroup_mandatory = elem.get_attribute("aria-required")
-        function_module.field_is_mandatory(workgroup_mandatory)
+        function_module.field_is_mandatory(driver, "#WorkGroup")
         #Verify Product Line is Read Only
-        elem = driver.find_element_by_css_selector("#ProductLine")
-        product_line_disabled = elem.get_attribute("disabled")
-        function_module.field_is_read_only(product_line_disabled)
+        function_module.field_is_read_only(driver, "#ProductLine")
         #Verify Product Line is Mandatory
-        elem = driver.find_element_by_css_selector("#ProductLine")
-        product_line_mandatory = elem.get_attribute("aria-required")
-        function_module.field_is_mandatory(product_line_mandatory)
+        function_module.field_is_mandatory(driver, "#ProductLine")
         #Verify TimeIn is Mandatory
-        elem = driver.find_element_by_css_selector("#TimeIn")
-        time_in_mandatory = elem.get_attribute("aria-required")
-        function_module.field_is_mandatory(time_in_mandatory)
+        function_module.field_is_mandatory(driver, "#TimeIn")
         #Verify TimeOut is Mandatory
-        elem = driver.find_element_by_css_selector("#TimeOut")
-        time_out_mandatory = elem.get_attribute("aria-required")
-        function_module.field_is_mandatory(time_out_mandatory)
+        function_module.field_is_mandatory(driver, "#TimeIn")
         #Verify Minutes is Read Only
-        elem = driver.find_element_by_css_selector("#minutes")
-        minutes_disabled = elem.get_attribute("disabled")
-        function_module.field_is_read_only(minutes_disabled)
+        function_module.field_is_read_only(driver, "#minutes")
         function_module.log_to_file('Test_VFL_Module:test001_add_new_VFL_record_test_details:Successfully verified all mandatory and/or read only fields', 'PASSED')
         print "All mandatory and read only fields verfied"
         #Select the 1st day of the month. Selecting the 1st day will help ensure test doesn't fail for wrong reasons
-        driver.find_element_by_id("VflDate").send_keys(function_module.first_day_of_month())
-        driver.find_element_by_id("VflDate").send_keys(Keys.RETURN)
+        vfl_page_objects.vfl_date(driver, function_module.first_day_of_month())
         print "Selected first day of the month for VFL Date field"
         #Select Site with NO Default Product Line & Allow Data = NO
-        driver.find_element_by_id("s2id_autogen1").click()
-        driver.find_element_by_id("s2id_autogen1").send_keys(client_variables.root_wg)
-        time.sleep(2)
+        vfl_page_objects.vfl_workgroup_selector(driver, client_variables.root_wg)
+        #Assert WorkGroup cannot be found
+        function_module.wait_for_element_XPATH(driver, "//*[@id='select2-drop']/ul/li")
         elem = driver.find_element_by_xpath("//*[@id='select2-drop']/ul/li")
         try:
             assert elem.text == 'No matches found'
@@ -90,14 +75,8 @@ class Test_001_VFL_Forms(unittest.TestCase):
             function_module.log_to_file('Test_VFL_Module:test001_add_new_VFL_record_test_details:Workgroup with Allow Data = NO cannot be selected', 'PASSED')
             print 'Asserted that WorkGroups with Allow Data = NO cannot be selected'
         time.sleep(1)
-        driver.find_element_by_id("s2id_autogen1").clear()
-        time.sleep(1)
         #Select a new Site with a Default Business Unit & Allow Data = YES
-        driver.find_element_by_id("s2id_autogen1").click()
-        driver.find_element_by_id("s2id_autogen1").send_keys(client_variables.wg_default_true)
-        time.sleep(1)
-        driver.find_element_by_id("s2id_autogen1").send_keys(Keys.RETURN)
-        time.sleep(4)
+        vfl_page_objects.vfl_workgroup_selector(driver, client_variables.wg_default_true)
         #Assert that Business Unit field has been automatically populated
         elem = Select(driver.find_element_by_xpath("//*[@id='ProductLine']"))
         default_business_unit = elem.first_selected_option.text
@@ -113,20 +92,12 @@ class Test_001_VFL_Forms(unittest.TestCase):
         time.sleep(1)
         #Clear Site field and select Site with NO Default Business Unit & Allow Data = YES
         driver.find_element_by_css_selector(".select2-search-choice-close").click()
-        driver.find_element_by_id("s2id_autogen1").click()
-        driver.find_element_by_id("s2id_autogen1").send_keys(client_variables.wg_default_false)
-        time.sleep(1)
-        driver.find_element_by_id("s2id_autogen1").send_keys(Keys.RETURN)
-        time.sleep(1)
+        vfl_page_objects.vfl_workgroup_selector(driver, client_variables.wg_default_false)
         #Select Business Unit
-        driver.find_element_by_id("ProductLine").click()
-        Select(driver.find_element_by_id("ProductLine")).select_by_visible_text(client_variables.bu2)
-        driver.find_element_by_id("ProductLine").send_keys(Keys.RETURN)
-        time.sleep(1)
+        vfl_page_objects.vfl_business_unit(driver, client_variables.bu2)
         print "Selected a WorkGroup with no Default Business Unit, but Allow Data = Yes"
         #Select Location
-        Select(driver.find_element_by_id("Location")).select_by_visible_text(client_variables.location1)
-        time.sleep(1)
+        vfl_page_objects.vfl_location(driver, client_variables.location1)
         print "Selected Location successfully"
         #Assert Participants field is automatically populated with current user
         current_participant = driver.find_element_by_xpath("//*[@id='s2id_Participants']/ul/li[1]/div").text
@@ -141,11 +112,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
             print 'Asserted that Participants field is automatically populated with current user'
         time.sleep(1)
         #Add second user to Participants field
-        driver.find_element_by_id("s2id_autogen2").click()
-        driver.find_element_by_id("s2id_autogen2").send_keys(client_variables.fullname2)
-        time.sleep(6)
-        driver.find_element_by_id("s2id_autogen2").send_keys(Keys.RETURN)
-        time.sleep(1)
+        vfl_page_objects.vfl_participants(driver, client_variables.fullname2)
         print "Added second user to Participants field"
         #Assert Second Participant added successfully
         second_participant = driver.find_element_by_xpath("//*[@id='s2id_Participants']/ul/li[2]/div").text
@@ -160,35 +127,20 @@ class Test_001_VFL_Forms(unittest.TestCase):
             print 'Asserted that Second Participant was added successfully'
         time.sleep(1)
         #Add value to Employees Spoken to field
-        driver.find_element_by_xpath("//*[@id='formDetails']/div/section[2]/section[2]/div/div/input").click()
-        driver.find_element_by_xpath("//*[@id='formDetails']/div/section[2]/section[2]/div/div/input").clear()
-        driver.find_element_by_xpath("//*[@id='formDetails']/div/section[2]/section[2]/div/div/input").send_keys("Richie Test")
-        time.sleep(1)
-        driver.find_element_by_xpath("//*[@id='formDetails']/div/section[2]/section[2]/div/div/input").send_keys(Keys.RETURN)
+        vfl_page_objects.vfl_employee(driver, "Richie Test")
+        print "Entered value into Employees Spoken Too field"
         #Enter a string into the Comments field
-        driver.find_element_by_id("Comments").clear()
-        driver.find_element_by_id("Comments").send_keys("testing automated VFL creation")
-        time.sleep(1)
+        vfl_page_objects.vfl_comment(driver, "testing automated VFL creation")
         print "Entered value into Comments field"
-        #Set Time In = 0:00 
-        driver.find_element_by_css_selector("#TimeIn").click()
-        driver.find_element_by_css_selector("#TimeIn").clear()
-        time.sleep(1)
-        driver.find_element_by_css_selector("#TimeIn").send_keys("0:00")
-        time.sleep(1)
-        #Set Time In = 1:00 
-        driver.find_element_by_css_selector("#TimeOut").click()
-        driver.find_element_by_css_selector("#TimeOut").clear()
-        time.sleep(1)
-        driver.find_element_by_css_selector("#TimeOut").send_keys("1:00")
-        time.sleep(1)
+        #Set time to 60 minutes
+        vfl_page_objects.vfl_time(driver, "0:00", "1:00")
         print "Set the Time In and Time Out fields"
         #Move successfully to the next tab
-        driver.find_element_by_id("btnNextSubmit").click()
+        vfl_page_objects.vfl_next_button(driver)
         function_module.wait_for_element_XPATH(driver, "//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a", 20)
         print "Moved to Acts Tab"
         #Select the finish button to return to the Main List View
-        driver.find_element_by_xpath("//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a").click()
+        vfl_page_objects.vfl_finish_button(driver)
         function_module.wait_for_element_CSS(driver, "i.fa.fa-power-off", 20)
         function_module.log_to_file('Test_VFL_Module:test001_add_new_VFL_record_test_details:Successfully saved new VFL record')
         print "Successfully saved VFL Record and returned to list view"
@@ -206,25 +158,20 @@ class Test_001_VFL_Forms(unittest.TestCase):
         function_module.log_to_file('Test_VFL_Module:test002_edit_existing_vfl_record:Successfully logged in and started test')
         print "Logged in successfully"
         #Select the VFL Module
-        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
-        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
-        driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
+        vfl_page_objects.open_vfl_module(driver)
         print "Moved to VFL Module"
         #Edit the latest VFL Record
-        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60)
-        driver.find_element_by_xpath("//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i").click()
+        vfl_page_objects.edit_latest_vfl_record(driver)
         print "Found Edit VFL button for latest VFL Record"
         #Change value of Comments field
-        function_module.wait_for_element_ID(driver, "Comments")
-        driver.find_element_by_id("Comments").clear()
-        driver.find_element_by_id("Comments").send_keys("testing automated VFL creation - EDITED")
+        vfl_page_objects.vfl_comment(driver, "testing automated VFL creation - EDITED")
         print "Successfullt edited Comments field"
         #Move successfully to the next tab
-        driver.find_element_by_id("btnNextSubmit").click()
+        vfl_page_objects.vfl_next_button(driver)
         function_module.wait_for_element_XPATH(driver, "//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a", 20)
         print "Moved to Acts Tab"
         #Select the finish button to return to the Main List View
-        driver.find_element_by_xpath("//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a").click()
+        vfl_page_objects.vfl_finish_button(driver)
         function_module.wait_for_element_CSS(driver, "i.fa.fa-power-off", 20)
         print "Successfully saved VFL Record and returned to list view"
         #Assert that the changes to the VFL record have been saved
@@ -240,9 +187,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
             function_module.log_to_file('Test_VFL_Module:test002_edit_existing_vfl_record:Changes made to VFL record were saved successfully', 'PASSED')
             print 'Asserted that VFL record was edited and saved'
         #Log out of the application
-        driver.find_element_by_css_selector("i.fa.fa-power-off").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1")
-        driver.find_element_by_id("bot2-Msg1").click()
+        common_page_objects.logout(driver)
         function_module.log_to_file('Test_VFL_Module:test002_edit_existing_vfl_record:TEST COMPLETED', 'PASSED')
         print "Test_VFL_Module:test002_edit_existing_vfl_record:TEST COMPLETED"
 
@@ -257,22 +202,16 @@ class Test_001_VFL_Forms(unittest.TestCase):
         function_module.log_to_file('Test_VFL_Module:test003_add_edit_delete_safe_acts:Successfully logged in and started test')
         print "Logged in successfully"
         #Select the VFL Module
-        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
-        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
-        driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
+        vfl_page_objects.open_vfl_module(driver)
         print "Moved to VFL Module"
         #Choose to edit existing VFL Record
-        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60)
-        driver.find_element_by_xpath("//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i").click()
+        vfl_page_objects.edit_latest_vfl_record(driver)
         print "Found Edit VFL button for latest VFL Record"
         #Move successfully to the next tab
-        driver.find_element_by_id("btnNextSubmit").click()
-        function_module.wait_for_element_XPATH(driver, "//*[@id='formActs']/div/section[1]/div/label[1]/i")
+        vfl_page_objects.vfl_next_button(driver)
         print "Moved to Acts Tab"
         #Add a Safe Act of type 1
-        driver.find_element_by_xpath("//*[@id='formActs']/div/section[1]/div/label[1]/i").click()
-        Select(driver.find_element_by_id("Acts")).select_by_visible_text(client_variables.act_type1)
-        driver.find_element_by_id("btnSubmitFormActs").click()
+        vfl_page_objects.add_vfl_act(driver, 1, client_variables.act_type1)
         time.sleep(2)
         print "Added Safe Act - First option in dropdown"
         #Assert that Safe Act of type 1 cannot be selected again, hence asserting that it has been successfully added
@@ -290,9 +229,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
             print 'Asserted that Safe Acts of the same type cannot be added twice (1)'
         time.sleep(2)
         #Edit a Safe Act of type 1 and change to type 2
-        driver.find_element_by_css_selector("i.glyphicon.glyphicon-pencil").click()
-        Select(driver.find_element_by_xpath("//*[@class='col col-6']/div/div/label/select")).select_by_visible_text(client_variables.act_type2)
-        driver.find_element_by_css_selector(".fa.fa-save.glyphicon-size").click()
+        vfl_page_objects.edit_top_act(driver, client_variables.act_type2)
         time.sleep(2)
         print "Edited Safe Act - Second option in dropdown"
         #Assert that Safe Act of type 2 cannot be selected again, hence asserting the act has been successfully edited
@@ -310,9 +247,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
             print 'Asserted that Safe Acts of the same type cannot be added twice (2)'
         time.sleep(2)
         #Delete Safe Act
-        driver.find_element_by_css_selector("i.glyphicon.glyphicon-trash").click()
-        function_module.wait_for_element_XPATH(driver, "//*[@id='bot2-Msg1']")
-        driver.find_element_by_xpath("//*[@id='bot2-Msg1']").click()
+        vfl_page_objects.delete_top_act(driver)
         time.sleep(2)
         #Verify Act was deleted by confirming that the edit Act button is not present
         self.driver.implicitly_wait(0)
@@ -329,7 +264,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
         self.driver.implicitly_wait(30)
         print "Successfully deleted Safe Act"
         #Select the finish button to return to the Main List View
-        driver.find_element_by_xpath("//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a").click()
+        vfl_page_objects.vfl_finish_button(driver)
         function_module.wait_for_element_CSS(driver, "i.fa.fa-power-off", 20)
         print "Successfully saved VFL Record and returned to list view"
         #Log out of the application
@@ -348,22 +283,17 @@ class Test_001_VFL_Forms(unittest.TestCase):
         function_module.log_to_file('Test_VFL_Module:test004_add_edit_unsafe_acts:Successfully logged in and started test')
         print "Logged in successfully"
         #Select the VFL Module
-        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
-        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8    
-        driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
+        vfl_page_objects.open_vfl_module(driver)
         print "Moved to VFL Module"
         #Choose to edit existing VFL Record
-        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60)
-        driver.find_element_by_xpath("//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i").click()
+        vfl_page_objects.edit_latest_vfl_record(driver)
         print "Found Edit VFL button for latest VFL Record"
         #Move successfully to the next tab
-        driver.find_element_by_id("btnNextSubmit").click()
-        function_module.wait_for_element_XPATH(driver, "//*[@id='formActs']/div/section[1]/div/label[2]/i")
+        vfl_page_objects.vfl_next_button(driver)
+        #function_module.wait_for_element_XPATH(driver, "//*[@id='formActs']/div/section[1]/div/label[2]/i")
         print "Moved to Acts Tab"
         #Add an Unsafe Act of type 1
-        driver.find_element_by_xpath("//*[@id='formActs']/div/section[1]/div/label[2]/i").click()
-        Select(driver.find_element_by_id("Acts")).select_by_visible_text(client_variables.act_type1)
-        driver.find_element_by_id("btnSubmitFormActs").click()
+        vfl_page_objects.add_vfl_act(driver, 2, client_variables.act_type1)
         time.sleep(2)
         print "Added Unsafe Act - First option in dropdown"
         #Assert that Unsafe Act of type 1 cannot be selected again, hence asserting that it has been successfully added
@@ -381,9 +311,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
             print 'Asserted that Unsafe Acts of the same type cannot be added twice (1)'
         time.sleep(2)
         #Edit an Unsafe Act of type 1 and change to type 2
-        driver.find_element_by_css_selector("i.glyphicon.glyphicon-pencil").click()
-        Select(driver.find_element_by_xpath("//*[@class='col col-6']/div/div/label/select")).select_by_visible_text(client_variables.act_type2)
-        driver.find_element_by_css_selector(".fa.fa-save.glyphicon-size").click()
+        vfl_page_objects.edit_top_act(driver, client_variables.act_type2)
         time.sleep(2)
         print "Edited Unsafe Act - Second option in dropdown"
         #Assert that Safe Act of type 2 cannot be selected again, hence asserting the act has been successfully edited
@@ -401,7 +329,7 @@ class Test_001_VFL_Forms(unittest.TestCase):
             print 'Asserted that Unsafe Acts of the same type cannot be added twice (2)'
         time.sleep(2)
         #Select the finish button to return to the Main List View
-        driver.find_element_by_xpath("//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a").click()
+        vfl_page_objects.vfl_finish_button(driver)
         function_module.wait_for_element_CSS(driver, "i.fa.fa-power-off", 20)
         print "Successfully saved VFL Record and returned to list view"
         #Log out of the application
