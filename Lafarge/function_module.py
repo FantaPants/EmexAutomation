@@ -2,6 +2,10 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import Select
+from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoAlertPresentException
 import unittest, time, datetime, re, os, shutil, zipfile, glob
 import client_variables, email_module
 from datetime import date
@@ -121,7 +125,7 @@ def zip_output():
 
 """Verification functions to use in Test Scripts when using an assertion would be overkill"""
 
-def field_is_mandatory(driver, locator):
+def field_is_mandatory_css(driver, locator):
     """Function used for checking that fields that use aria-required parameter are correctly set to
     mandatory as expected. This verification can be used to warn the tester when the field is
     incorrectly configured, but won't disturb the flow of the overall test."""
@@ -132,47 +136,133 @@ def field_is_mandatory(driver, locator):
     else:
         log_to_file('Mandatory field test failed', 'WARNING')
 
-def field_is_read_only(driver, locator):
-    """Function used for checking that fields that use disabled parameter are correctly set to
+def field_is_mandatory_xpath(driver, locator):
+    """Function used for checking that fields that use aria-required parameter are correctly set to
+    mandatory as expected. This verification can be used to warn the tester when the field is
+    incorrectly configured, but won't disturb the flow of the overall test."""
+    elem = driver.find_element_by_css_selector(locator)
+    is_mandatory = elem.get_attribute("aria-required")
+    if is_mandatory == 'true':
+        print "Mandatory field = true"
+    else:
+        log_to_file('Mandatory field test failed', 'WARNING')
+
+def field_is_read_only_css(driver, locator):
+    """Using a CSS Selector Locator, this function is used for checking that fields that use disabled parameter are correctly set to
     read only as expected. This verification can be used to warn the tester when the field is
     incorrectly configured, but won't disturb the flow of the overall test."""
     elem = driver.find_element_by_css_selector(locator)
     is_disabled = elem.get_attribute("disabled")
     if is_disabled == 'true':
         print "Read Only field = true"
+        return True
     else:
-        log_to_file('Read Only field test failed', 'WARNING')
+        log_to_file('Expected Read Only field to be disabled, but was still enabled', 'WARNING')
+        return False
 
-def field_is_not_read_only(str):
-    """Function used for checking that fields that use disabled parameter are correctly set to
+def field_is_read_only_xpath(driver, locator):
+    """Using an XPath Locator, this function is used for checking that fields that use disabled parameter are correctly set to
     read only as expected. This verification can be used to warn the tester when the field is
     incorrectly configured, but won't disturb the flow of the overall test."""
-    if str == 'true':
-        log_to_file('Read Only field enabled test failed', 'WARNING')
+    elem = driver.find_element_by_xpath(locator)
+    is_disabled = elem.get_attribute("disabled")
+    if is_disabled == 'true':
+        print "Read Only field = true"
+        return True
+    else:
+        log_to_file('Expected Read Only field to be disabled, but was still enabled', 'WARNING')
+        return False
+
+def field_is_not_read_only_css(driver, locator):
+    """Using a CSS Selector Locator, this function used for checking that fields that use disabled parameter are correctly set to
+    read only as expected. This verification can be used to warn the tester when the field is
+    incorrectly configured, but won't disturb the flow of the overall test."""
+    elem = driver.find_element_by_css_selector(locator)
+    is_disabled = elem.get_attribute("disabled")
+    if is_disabled == 'true':
+        log_to_file('Expected Read Only field to be enabled, but was still disabled', 'WARNING')
+        return False
     else:
         print "Read Only field enabled = true"
+        return True
+def field_is_not_read_only_xpath(driver, locator):
+    """Using an XPath Locator, this function is used for checking that fields that use disabled
+    parameter are currently enabled. This verification can be used to warn the tester when the
+    field is incorrectly configured, but won't disturb the flow of the overall test."""
+    elem = driver.find_element_by_xpath(locator)
+    is_disabled = elem.get_attribute("disabled")
+    if is_disabled == 'true':
+        log_to_file('Expected Read Only field to be enabled, but was still disabled', 'WARNING')
+        return False
+    else:
+        print "Read Only field enabled = true"
+        return True
 
-def field_is_hidden(str):
+def field_is_hidden_css(driver, locator):
     """Function used for checking that fields that use display parameter are correctly set to
     none/hidden as expected. This verification can be used to warn the tester when the field is
     incorrectly configured, but won't disturb the flow of the overall test."""
-    if str == 'display: none;':
+    elem = driver.find_element_by_css_selector(locator)
+    is_hidden = elem.get_attribute("style")
+    if is_hidden == 'display: none;':
         print "Hidden field = true"
+        return True
     else:
         log_to_file('Hidden field test failed', 'WARNING')
+        return False
 
-def field_is_not_hidden(str):
+def field_is_hidden_xpath(driver, locator):
     """Function used for checking that fields that use display parameter are correctly set to
     none/hidden as expected. This verification can be used to warn the tester when the field is
     incorrectly configured, but won't disturb the flow of the overall test."""
-    if str == 'display: none;':
+    elem = driver.find_element_by_xpath(locator)
+    is_hidden = elem.get_attribute("style")
+    if is_hidden == 'display: none;':
+        print "Hidden field = true"
+        return True
+    else:
+        log_to_file('Hidden field test failed', 'WARNING')
+        return False
+
+def field_is_not_hidden_css(driver, locator):
+    """Function used for checking that fields that use display parameter are correctly set to
+    none/hidden as expected. This verification can be used to warn the tester when the field is
+    incorrectly configured, but won't disturb the flow of the overall test."""
+    elem = driver.find_element_by_css_selector(locator)
+    is_hidden = elem.get_attribute("style")
+    if is_hidden == 'display: none;':
         log_to_file('Hidden field displayed test failed', 'WARNING')
+        return False
     else:
         print "Hidden field displayed = true"
+        return True
+
+def field_is_not_hidden_xpath(driver, locator):
+    """Function used for checking that fields that use display parameter are correctly set to
+    none/hidden as expected. This verification can be used to warn the tester when the field is
+    incorrectly configured, but won't disturb the flow of the overall test."""
+    elem = driver.find_element_by_xpath(locator)
+    is_hidden = elem.get_attribute("style")
+    if is_hidden == 'display: none;':
+        log_to_file('Hidden field displayed test failed', 'WARNING')
+        return False
+    else:
+        print "Hidden field displayed = true"
+        return True
 
 """Explicit Wait functions for use with controlling webdriver and for catching timeouts"""
 
-def wait_for_element_ID(driver, locator, time=10):
+def wait_for_text_to_be_present(driver, locator, text, time=30):
+    wait = WebDriverWait(driver, time)
+    try:
+        wait.until(EC.text_to_be_present_in_element((By.XPATH, locator), text))
+    except NoSuchElementException:
+        function_module.log_to_file('Test_VFL_Module:TIMEOUT:Failed to locate given text and/or element', 'FAILED')
+        print 'ERROR - TIMEOUT - Failed to locate given text and/or element'
+        email_module.wait_error_mail('Text Present in Element', locator, 'NoSuchElementException')
+        return False
+
+def wait_for_element_ID(driver, locator, time=30):
     """Function used to Explicitly Wait for an element to be displayed. The Element is located
     using its ID"""
     try:
@@ -183,7 +273,7 @@ def wait_for_element_ID(driver, locator, time=10):
         email_module.wait_error_mail('ID', locator, 'NoSuchElementException')
         return False
     
-def wait_for_element_Link_Text(driver, locator, time=10):
+def wait_for_element_Link_Text(driver, locator, time=30):
     """Function used to Explicitly Wait for an element to be displayed. The Element is located
     using its ID"""
     try:
@@ -194,7 +284,7 @@ def wait_for_element_Link_Text(driver, locator, time=10):
         email_module.wait_error_mail('LINK TEXT', locator, 'NoSuchElementException')
         return False
 
-def wait_for_element_CSS(driver, locator, time=10):
+def wait_for_element_CSS(driver, locator, time=30):
     """Function used to Explicitly Wait for an element to be displayed. The Element is located
     using its CSS_SELECTOR"""
     try:
@@ -205,7 +295,7 @@ def wait_for_element_CSS(driver, locator, time=10):
         email_module.wait_error_mail('CSS SELECTOR', locator, 'NoSuchElementException')
         return False
 
-def wait_for_element_XPATH(driver, locator, time=10):
+def wait_for_element_XPATH(driver, locator, time=30):
     """Function used to Explicitly Wait for an element to be displayed. The Element is located
     using its XPATH"""
     try:
@@ -216,7 +306,7 @@ def wait_for_element_XPATH(driver, locator, time=10):
         email_module.wait_error_mail('XPATH', locator, 'NoSuchElementException')
         return False
 
-def wait_to_be_clickable_XPATH(driver, locator, time=10):
+def wait_to_be_clickable_XPATH(driver, locator, time=30):
     """Function used to Explicitly Wait for an element to be clickable. The Element is located
     using its XPATH"""
     try:
@@ -227,5 +317,127 @@ def wait_to_be_clickable_XPATH(driver, locator, time=10):
         email_module.wait_error_mail('XPATH', locator, 'ElementNotSelectableException')
         return False
 
+"""Verifications"""
 
-   
+def verify_element_not_present_XPATH(driver, locator, module, test, pass_message, fail_message):
+    """Verify whether an element is NOT present using an XPath locator. If the element is NOT present
+    handle the resulting NoSuchElementException and pass the verification. However if the element is present
+    and no exception is thrown, the verification fails. Print a fail message, log a fail message and send
+    an appropriate fail email notification"""
+    try:
+        driver.find_element_by_xpath(locator)
+    except NoSuchElementException:
+        log_to_file(''+module+' Module:'+test+':'+pass_message+'', 'PASSED')
+        print pass_message
+    else:
+        log_to_file(''+module+':'+test+':'+fail_message+'', 'FAILED')
+        print 'ERROR WARNING - ' + fail_message
+        email_module.error_mail(module, test, fail_message, 'NoSuchElementException')
+
+def verify_element_not_present_CSS(driver, locator, module, test, pass_message, fail_message):
+    """Verify whether an element is NOT present using an CSS Selector locator. If the element is NOT present
+    handle the resulting NoSuchElementException and pass the verification. However if the element is present
+    and no exception is thrown, the verification fails. Print a fail message, log a fail message and send
+    an appropriate fail email notification"""
+    try:
+        driver.find_element_by_css_selector(locator)
+    except NoSuchElementException:
+        log_to_file(''+module+' Module:'+test+':'+pass_message+'', 'PASSED')
+        print pass_message
+    else:
+        log_to_file(''+module+':'+test+':'+fail_message+'', 'FAILED')
+        print 'ERROR WARNING - ' + fail_message
+        email_module.error_mail(module, test, fail_message, 'NoSuchElementException')
+
+def verify_element_is_present_XPATH(driver, locator, module, test, pass_message, fail_message):
+    """Verify whether an element is present using an CSS Selector locator. If the element is NOT present
+    throw a NoSuchElementException and fail the verification. However if the element is present
+    and no exception is thrown, the verification passes."""
+    try:
+        driver.find_element_by_xpath(locator)
+    except NoSuchElementException:
+        log_to_file(''+module+':'+test+':'+fail_message+'', 'FAILED')
+        print 'ERROR WARNING - ' + fail_message
+        email_module.error_mail(module, test, fail_message, 'NoSuchElementException')
+    else:
+        log_to_file(''+module+' Module:'+test+':'+pass_message+'', 'PASSED')
+        print pass_message
+
+def verify_element_is_present_CSS(driver, locator, module, test, pass_message, fail_message):
+    """Verify whether an element is present using an CSS Selector locator. If the element is NOT present
+    throw a NoSuchElementException and fail the verification. However if the element is present
+    and no exception is thrown, the verification passes."""
+    try:
+        driver.find_element_by_css_selector(locator)
+    except NoSuchElementException:
+        log_to_file(''+module+':'+test+':'+fail_message+'', 'FAILED')
+        print 'ERROR WARNING - ' + fail_message
+        email_module.error_mail(module, test, fail_message, 'NoSuchElementException')
+    else:
+        log_to_file(''+module+' Module:'+test+':'+pass_message+'', 'PASSED')
+        print pass_message
+
+def verify_value(driver, locator, value, module, test, pass_message, fail_message):
+    """Wait for the element to appear using an xpath locator. Create a variable to store the located element.
+    Verify that the stated string value is the same as the fields text attribute"""
+    wait_for_element_XPATH(driver, locator)
+    elem = driver.find_element_by_xpath(locator)
+    text = elem.text
+    try:
+        assert text == value
+    except AssertionError:
+        log_to_file(''+module+':'+test+':'+fail_message+'', 'FAILED')
+        print 'ERROR - ASSERTION EXCEPTION - ' + fail_message
+        email_module.error_mail(module, test, fail_message, 'AssertionError')
+    else:
+        log_to_file(''+module+' Module:'+test+':'+pass_message+'', 'PASSED')
+        print pass_message
+
+def verify_dropdown_value(driver, locator, value, module, test, pass_message, fail_message):
+    """Wait for the dropdown element to appear using an xpath locator. Create a variable to store the selected
+    dropdown value. Verify that the stated string value is the same as the values text attribute"""
+    wait_for_element_XPATH(driver, locator)
+    elem = Select(driver.find_element_by_xpath(locator))
+    text = elem.first_selected_option.text
+    try:
+        assert text == value
+    except AssertionError:
+        log_to_file(''+module+':'+test+':'+fail_message+'', 'FAILED')
+        print 'ERROR - ASSERTION EXCEPTION - ' + fail_message
+        email_module.error_mail(module, test, fail_message, 'AssertionError')
+    else:
+        log_to_file(''+module+' Module:'+test+':'+pass_message+'', 'PASSED')
+        print pass_message
+
+def verify_radio_dropdown_element_is_disabled(driver, locator, value, module, test, pass_message, fail_message):
+    """VFL Specific Example - Selecting Safe or UnSafe activates dropdown. Function waits for radio button to
+    appear and selects the correct one. Then verifies that the given dropdown value is present in the list but
+    currently set to read only"""
+    wait_for_element_XPATH(driver, locator)
+    driver.find_element_by_xpath(locator).click()
+    elem = driver.find_element_by_xpath(value)
+    is_disabled = elem.get_attribute("disabled")
+    try:
+        assert is_disabled == 'true'
+    except AssertionError:
+        log_to_file(''+module+':'+test+':'+fail_message+'', 'FAILED')
+        print 'ERROR - ASSERTION EXCEPTION - ' + fail_message
+        email_module.error_mail(module, test, fail_message, 'AssertionError')
+    else:
+        log_to_file(''+module+' Module:'+test+':'+pass_message+'', 'PASSED')
+        print pass_message
+
+def verify_tool_tip_value(driver, locator, value, module, test, pass_message, fail_message):
+    """Verifies the title of the given tool-tip"""
+    wait_for_element_XPATH(driver, locator)
+    elem = driver.find_element_by_xpath(value)
+    tool_tip = elem.get_attribute("data-original_title")
+    try:
+        assert tool_tip == value
+    except AssertionError:
+        log_to_file(''+module+':'+test+':'+fail_message+'', 'FAILED')
+        print 'ERROR - ASSERTION EXCEPTION - ' + fail_message
+        email_module.error_mail(module, test, fail_message, 'AssertionError')
+    else:
+        log_to_file(''+module+' Module:'+test+':'+pass_message+'', 'PASSED')
+        print pass_message

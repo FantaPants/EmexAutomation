@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from selenium import webdriver
-import unittest, email_module, function_module, client_variables, time
+import unittest, email_module, function_module, client_variables, common_page_objects, vfl_page_objects, time
 
 class Test_002_VFL_Clean_Up(unittest.TestCase):
     """Run VFL Module clean up at end of test run"""
@@ -18,17 +18,10 @@ class Test_002_VFL_Clean_Up(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url + "/")
         #Login to the application
-        function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
-        driver.find_element_by_name("UserName").clear()
-        driver.find_element_by_name("UserName").send_keys(client_variables.username1)
-        driver.find_element_by_name("Password").clear()
-        driver.find_element_by_name("Password").send_keys(client_variables.pword1)
-        driver.find_element_by_css_selector("button.btn.btn-primary").click()
+        common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
         print "Logged in successfully"
         #Select the VFL Module
-        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
-        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
-        driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
+        vfl_page_objects.open_vfl_module(driver)
         print "Moved to VFL Module"
         time.sleep(5)
         #Delete all VFL records
@@ -47,9 +40,7 @@ class Test_002_VFL_Clean_Up(unittest.TestCase):
             print amount_of_records
         print "Total number of Test VFL Records now = 0"
         #Log out of the application
-        driver.find_element_by_css_selector("i.fa.fa-power-off").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1")
-        driver.find_element_by_id("bot2-Msg1").click()
+        common_page_objects.logout(driver)
         print "All VFL Records deleted"
 
     def tearDown(self):

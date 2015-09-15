@@ -34,8 +34,12 @@ def move_to_module(driver, locator):
     driver.find_element_by_css_selector(locator).click()
 
 def click_button(driver, locator):
-    function_module.wait_for_element_XPATH(driver, locator)
+    function_module.wait_for_element_XPATH(driver, locator, 60)
     driver.find_element_by_xpath(locator).click()
+
+def click_button_css(driver, locator):
+    function_module.wait_for_element_CSS(driver, locator, 60)
+    driver.find_element_by_css_selector(locator).click()
     
 def send_value(driver, locator, value):
     function_module.wait_for_element_XPATH(driver, locator)
@@ -44,8 +48,21 @@ def send_value(driver, locator, value):
     driver.find_element_by_xpath(locator).send_keys(value)
     driver.find_element_by_xpath(locator).send_keys(Keys.RETURN)
 
+def send_value_css(driver, locator, value):
+    function_module.wait_for_element_CSS(driver, locator)
+    driver.find_element_by_css_selector(locator).click()
+    driver.find_element_by_css_selector(locator).clear()
+    driver.find_element_by_css_selector(locator).send_keys(value)
+    driver.find_element_by_css_selector(locator).send_keys(Keys.RETURN)
+
 def select_dropdown_value(driver, locator, value):
     function_module.wait_for_element_XPATH(driver, locator)
     driver.find_element_by_xpath(locator).click()
     Select(driver.find_element_by_xpath(locator)).select_by_visible_text(value)
     driver.find_element_by_xpath(locator).send_keys(Keys.RETURN)
+
+def select_dropdown_value_css(driver, locator, value):
+    function_module.wait_for_element_CSS(driver, locator)
+    driver.find_element_by_css_selector(locator).click()
+    Select(driver.find_element_by_css_selector(locator)).select_by_visible_text(value)
+    driver.find_element_by_css_selector(locator).send_keys(Keys.RETURN)
