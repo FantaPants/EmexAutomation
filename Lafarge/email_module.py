@@ -65,7 +65,7 @@ def summary_mail():
 
 
 
-def error_mail(test_number, test_message, exception):
+def error_mail(test_module, test_number, test_message, exception):
     """Builds and error message email that is send when an assertion throws an exception during testing"""
 
     #Define email content
@@ -73,9 +73,9 @@ def error_mail(test_number, test_message, exception):
     client_name = client_variables.client_name
     sender = 'support@emex.com'
     receiver = 'qateam@emex.com'
-    subject = 'POTENTIAL ERROR FOUND IN ' + test_number + ' - CLIENT: ' + client_variables.client_name + ' - DATE: ' + date
+    subject = 'POTENTIAL ERROR FOUND IN ' + test_module + ':' + test_number + ' - CLIENT: ' + client_variables.client_name + ' - DATE: ' + date
     subject_string = str(subject)
-    body_intro = 'During the latest Automated Test Run for ' + client_name + ' on: ' + date + '. An exception of type ' + exception + ' was thrown during ' + test_number + '.' 
+    body_intro = 'During the latest Automated Test Run for ' + client_name + ' on: ' + date + '. An exception of type ' + exception + ' was thrown during ' + test_module + ' ' + test_number + '.' 
     body_main = test_message
 
     #Create Message container
