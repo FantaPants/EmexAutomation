@@ -6,6 +6,8 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import NoAlertPresentException
+from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import ElementNotSelectableException
 import unittest, time, datetime, re, os, shutil, zipfile, glob
 import client_variables, email_module
 from datetime import date
@@ -66,14 +68,13 @@ def log_to_file(text, status='INFO'):
 
 """Set of functions for moving files that have been created during test run"""
 
-def move_file():
+def move_file(source, destination):
     """Move file function to be used at any point where file created
     from download needs to be moved to client specific folder"""
-    source = client_variables.output_folder
-    destination = client_variables.client_folder
+    #source = client_variables.output_folder
+    #destination = client_variables.client_folder
     copyfiles = os.listdir(source)
     ext = (".xlsx", ".csv", ".pdf", ".png")
-
     for copyfile in copyfiles:
         if copyfile.endswith(ext):
             copyfile = source + "/" + copyfile
@@ -85,36 +86,36 @@ def move_file():
             shutil.move(copyfile, destination)
 
 
-def rename_file(str):
+def rename_file(source, oldname, newname):
     """Generic Rename function that is intended to allow string input of new filename.
     Currently not in use as consistent windows errors claiming could not find new file
     drove me bonkers. Functions code is currently being used directly in tests with
-    "newname" given a specific value in each case"""
-    source = client_variables.output_folder
+    "new_name" given a specific value in each case"""
+    #source = client_variables.output_folder
     renamefiles = os.listdir(source)
     ext = (".xlsx", ".csv", ".pdf", ".png")
     for renamefile in renamefiles:
         if renamefile.endswith(ext):
             renamefile = source + "/" + renamefile
             print "renaming:", renamefile
-            newname = source + "/" + str
+            newname = source + "/" + newname
             print "newname:", newname
             os.rename(renamefile, newname)
-        elif renamefile.startswith('GetTotalByYearReport'):
+        elif renamefile.startswith(oldname):
             renamefile = source + "/" + renamefile
             print "renaming:", renamefile
-            newname = source + "/" + str
+            newname = source + "/" + newname
             print "newname:", newname
             os.rename(renamefile, newname)
 
 """set of functions designed to create zip files that can be
 attached to emails etc."""
 
-def zip_output():
+def zip_output(directory):
    """function creates a zip file comprising of files currently in client
    specific output folder. The resulting zip file will reside will test runs local
    directory, but each test run should delete this zip folder before finishing"""
-   directory = client_variables.output_zip_folder
+   #directory = client_variables.output_zip_folder
    #create the zip archive
    zip = zipfile.ZipFile('outputs.zip', 'w')
 
@@ -140,7 +141,7 @@ def field_is_mandatory_xpath(driver, locator):
     """Function used for checking that fields that use aria-required parameter are correctly set to
     mandatory as expected. This verification can be used to warn the tester when the field is
     incorrectly configured, but won't disturb the flow of the overall test."""
-    elem = driver.find_element_by_css_selector(locator)
+    elem = driver.find_element_by_xpath(locator)
     is_mandatory = elem.get_attribute("aria-required")
     if is_mandatory == 'true':
         print "Mandatory field = true"
@@ -253,11 +254,12 @@ def field_is_not_hidden_xpath(driver, locator):
 """Explicit Wait functions for use with controlling webdriver and for catching timeouts"""
 
 def wait_for_text_to_be_present(driver, locator, text, time=30):
+    """Function is used to wait for the given text to be present in the given located element"""
     wait = WebDriverWait(driver, time)
     try:
         wait.until(EC.text_to_be_present_in_element((By.XPATH, locator), text))
     except NoSuchElementException:
-        function_module.log_to_file('Test_VFL_Module:TIMEOUT:Failed to locate given text and/or element', 'FAILED')
+        log_to_file('Test_VFL_Module:TIMEOUT:Failed to locate given text and/or element', 'FAILED')
         print 'ERROR - TIMEOUT - Failed to locate given text and/or element'
         email_module.wait_error_mail('Text Present in Element', locator, 'NoSuchElementException')
         return False
@@ -268,7 +270,7 @@ def wait_for_element_ID(driver, locator, time=30):
     try:
         WebDriverWait(driver, time).until(lambda s: s.find_element(By.ID, locator).is_displayed())
     except NoSuchElementException:
-        function_module.log_to_file('Test_VFL_Module:TIMEOUT:Failed to locate required ID element within requirement timeframe', 'FAILED')
+        log_to_file('Test_VFL_Module:TIMEOUT:Failed to locate required ID element within requirement timeframe', 'FAILED')
         print 'ERROR - TIMEOUT - Failed to locate required ID element within requirement timeframe'
         email_module.wait_error_mail('ID', locator, 'NoSuchElementException')
         return False
@@ -279,7 +281,7 @@ def wait_for_element_Link_Text(driver, locator, time=30):
     try:
         WebDriverWait(driver, time).until(lambda s: s.find_element(By.LINK_TEXT, locator).is_displayed())
     except NoSuchElementException:
-        function_module.log_to_file('Test_VFL_Module:TIMEOUT:Failed to locate required ID element within requirement timeframe', 'FAILED')
+        log_to_file('Test_VFL_Module:TIMEOUT:Failed to locate required ID element within requirement timeframe', 'FAILED')
         print 'ERROR - TIMEOUT - Failed to locate required ID element within requirement timeframe'
         email_module.wait_error_mail('LINK TEXT', locator, 'NoSuchElementException')
         return False
@@ -290,7 +292,7 @@ def wait_for_element_CSS(driver, locator, time=30):
     try:
         WebDriverWait(driver, time).until(lambda s: s.find_element(By.CSS_SELECTOR, locator).is_displayed())
     except NoSuchElementException:
-        function_module.log_to_file('Test_VFL_Module:TIMEOUT:Failed to locate required CSS element within requirement timeframe', 'FAILED')
+        log_to_file('Test_VFL_Module:TIMEOUT:Failed to locate required CSS element within requirement timeframe', 'FAILED')
         print 'ERROR - TIMEOUT - Failed to locate required CSS element within requirement timeframe'
         email_module.wait_error_mail('CSS SELECTOR', locator, 'NoSuchElementException')
         return False
@@ -298,23 +300,43 @@ def wait_for_element_CSS(driver, locator, time=30):
 def wait_for_element_XPATH(driver, locator, time=30):
     """Function used to Explicitly Wait for an element to be displayed. The Element is located
     using its XPATH"""
+    wait = WebDriverWait(driver, time)
     try:
-        WebDriverWait(driver, time).until(lambda s: s.find_element(By.XPATH, locator).is_displayed())
+        wait.until(EC.visibility_of_element_located((By.XPATH, locator)))
+        #WebDriverWait(driver, time).until(lambda s: s.find_element(By.XPATH, locator).is_displayed())
+        return True
     except NoSuchElementException:
-        function_module.log_to_file('Test_VFL_Module:TIMEOUT:Failed to locate required XPATH element within requirement timeframe', 'FAILED')
-        print 'ERROR - TIMEOUT - Failed to locate required XPATH element within requirement timeframe'
+        log_to_file('Test_VFL_Module:TIMEOUT:Failed to locate required XPATH element within requirement timeframe', 'FAILED')
+        print 'ERROR - NO SUCH ELEMENT - Failed to locate required XPATH element within requirement timeframe'
         email_module.wait_error_mail('XPATH', locator, 'NoSuchElementException')
+        return False
+    except TimeoutException:
+        log_to_file('Test_VFL_Module:TIMEOUT:Failed to locate required XPATH element within requirement timeframe', 'FAILED')
+        print 'ERROR - TIMEOUT - Failed to locate required XPATH element within requirement timeframe'
+        email_module.wait_error_mail('XPATH', locator, 'TimeoutException')
         return False
 
 def wait_to_be_clickable_XPATH(driver, locator, time=30):
     """Function used to Explicitly Wait for an element to be clickable. The Element is located
     using its XPATH"""
+    wait = WebDriverWait(driver, time)
     try:
-        WebDriverWait(driver, time).until((EC.element_to_be_clickable(By.XPATH, locator)))
+        wait.until(EC.element_to_be_clickable((By.XPATH, locator)))
+        return True
+    except NoSuchElementException:
+        log_to_file('Test_VFL_Module:TIMEOUT:Failed to locate clickable XPATH element', 'FAILED')
+        print 'ERROR - NO SUCH ELEMENT - Failed to locate clickable XPATH element within requirement timeframe'
+        email_module.wait_error_mail('XPATH', locator, 'NoSuchElementException')
+        return False
     except ElementNotSelectableException:
-        function_module.log_to_file('Test_VFL_Module:TIMEOUT:Failed to locate clickable XPATH element', 'FAILED')
-        print 'ERROR - TIMEOUT - Failed to locate clickable XPATH element within requirement timeframe'
+        log_to_file('Test_VFL_Module:TIMEOUT:Failed to locate clickable XPATH element', 'FAILED')
+        print 'ERROR - ELEMENT NOT CLICKABLE - Failed to locate clickable XPATH element within requirement timeframe'
         email_module.wait_error_mail('XPATH', locator, 'ElementNotSelectableException')
+        return False
+    except TimeoutException:
+        log_to_file('Test_VFL_Module:TIMEOUT:Failed to locate clickable XPATH element', 'FAILED')
+        print 'ERROR - TIMEOUT - Failed to locate clickable XPATH element within requirement timeframe'
+        email_module.wait_error_mail('XPATH', locator, 'TimeoutException')
         return False
 
 """Verifications"""
@@ -408,6 +430,19 @@ def verify_dropdown_value(driver, locator, value, module, test, pass_message, fa
     else:
         log_to_file(''+module+' Module:'+test+':'+pass_message+'', 'PASSED')
         print pass_message
+
+def verify_value_comparison(driver, first_value, second_value, module, test, pass_message, fail_message):
+    try:
+        assert first_value == second_value
+    except AssertionError:
+        log_to_file(''+module+':'+test+':'+fail_message+'', 'FAILED')
+        print 'ERROR - ASSERTION EXCEPTION - ' + fail_message
+        email_module.error_mail(module, test, fail_message, 'AssertionError')
+        return False
+    else:
+        log_to_file(''+module+' Module:'+test+':'+pass_message+'', 'PASSED')
+        print pass_message
+        return True
 
 def verify_radio_dropdown_element_is_disabled(driver, locator, value, module, test, pass_message, fail_message):
     """VFL Specific Example - Selecting Safe or UnSafe activates dropdown. Function waits for radio button to

@@ -1194,7 +1194,7 @@ class Test_002_VFL_Main(unittest.TestCase):
         time.sleep(3)
         print "took screenshot and saved to output folder"
         #Move screenshot into client specific folder
-        function_module.move_file()
+        function_module.move_file(client_variables.output_folder, client_variables.client_folder)
         function_module.log_to_file('Test_VFL_Module:test024_vfl_show_hide_columns:Successfully moved screenshot of list view into client specific folder')
         time.sleep(2)
         #Log out of the application
@@ -1226,188 +1226,39 @@ class Test_003_VFL_Settings(unittest.TestCase):
         buttons function correctly for both fields"""
         driver = self.driver
         driver.get(self.base_url + "/")
+        current_year = datetime.datetime.now().year
         #Login to the application
         common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
         function_module.log_to_file('Test_VFL_Module:test025_add_year:Successfully logged in and started test')
         print "Logged in successfully"
         #Select the VFL Module
-        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
-        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
-        driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
+        vfl_page_objects.open_vfl_module(driver)
+        vfl_page_objects.wait_for_vfl_records(driver)
         print "Moved to VFL Module"
         #Open the VFL Settings Window
-        function_module.wait_for_element_XPATH(driver, "//*[@id='content']/div[1]/div[2]/div/a")
-        driver.find_element_by_xpath("//*[@id='content']/div[1]/div[2]/div/a").click()
-        function_module.wait_for_element_XPATH(driver, "//*[@id='Year']")
+        vfl_page_objects.open_vfl_settings(driver)
         print "Successfully opened VFL Settings dialog"
         #Assert that Year field is automatically populated with current year
-        year_populated = True
-        year_field = driver.find_element_by_xpath("//*[@id='Year']")
-        year_value = year_field.get_attribute("aria-valuenow")
-        current_year = datetime.datetime.now().year
-        year_string = str(current_year)
-        try:
-            assert year_value == year_string
-        except AssertionError:
-            function_module.log_to_file('Test_VFL_Module:test025_add_year:Year field is NOT set to current year by default', 'FAILED')
-            print 'ERROR - ASSERTION EXCEPTION - The Settings Year field is NOT set to current year by default'
-            email_module.error_mail('VFL Test025', 'When opening the VFL Settings dialog box, the year field was not populated with the current year by default', 'AssertionError')
-            year_populated = False
-        else:
-            function_module.log_to_file('Test_VFL_Module:test025_add_year:Year field is set to current year by default', 'PASSED')
-            print 'Asserted that the Settings Year field is set to current year by default'
-        time.sleep(1)
-        #If year field is not current year, MAKE IT SO!
-        if year_populated == False:
-            driver.find_element_by_xpath("//*[@id='Year']").click()
-            driver.find_element_by_xpath("//*[@id='Year']").send_keys(year_string)
-            time.sleep(2)
-            driver.find_element_by_xpath("//*[@id='Year']").send_keys(Keys.RETURN)
-            time.sleep(2)
-            print "Year field is now populated with current year"
-        else:
-            print "Year field is already populated"
+        vfl_page_objects.vfl_year_default_current(driver)
         #Increase Year by 1 and assert change
-        driver.find_element_by_xpath("//*[@id='formSettings']/div/section[1]/div/span/a[1]").click()
-        year_field_new = driver.find_element_by_xpath("//*[@id='Year']")
-        year_value_new = year_field_new.get_attribute("aria-valuenow")
-        next_year = datetime.datetime.now().year + 1
-        next_year_string = str(next_year)
-        try:
-            assert year_value_new == next_year_string
-        except AssertionError:
-            function_module.log_to_file('Test_VFL_Module:test025_add_year:Year field was not increased by 1 as expected', 'FAILED')
-            print 'ERROR - ASSERTION EXCEPTION - Failed to increase the year field by 1 as expected'
-            email_module.error_mail('VFL Test025', 'Failed to verify that the year field was successfully increased by one', 'AssertionError')
-        else:
-            function_module.log_to_file('Test_VFL_Module:test025_add_year:Year field increased by 1', 'PASSED')
-            print 'Asserted that the Settings Year field can be increased by 1'
-        time.sleep(1)
+        vfl_page_objects.vfl_year_increment(driver, 1)
         #Decrease Year by 1 and assert change
-        driver.find_element_by_xpath("//*[@id='formSettings']/div/section[1]/div/span/a[2]").click()
-        year_field_set = driver.find_element_by_xpath("//*[@id='Year']")
-        year_value_set = year_field_set.get_attribute("aria-valuenow")
-        this_year = datetime.datetime.now().year
-        this_year_string = str(this_year)
-        try:
-            assert year_value_set == this_year_string
-        except AssertionError:
-            function_module.log_to_file('Test_VFL_Module:test025_add_year:Year field was not decreased by 1 as expected', 'FAILED')
-            print 'ERROR - ASSERTION EXCEPTION - Failed to decrease the year field by 1 as expected'
-            email_module.error_mail('VFL Test025', 'Failed to verify that the year field was successfully decreased by one', 'AssertionError')
-        else:
-            function_module.log_to_file('Test_VFL_Module:test025_add_year:Year field decreased by 1', 'PASSED')
-            print 'Asserted that the Settings Year field can be decreased by 1'
-        time.sleep(1)
+        vfl_page_objects.vfl_year_decrement(driver, 1)
         #Assert that No. Visits field is automatically populated value = 0
-        visits_populated = True
-        visits_field = driver.find_element_by_xpath("//*[@id='NoVisits']")
-        visits_value = visits_field.get_attribute("aria-valuenow")
-        visits_string = str(visits_value)
-        try:
-            assert visits_string == "0"
-        except AssertionError:
-            function_module.log_to_file('Test_VFL_Module:test025_add_year:Number of Visits field was NOT set to 0 by default', 'FAILED')
-            print 'ERROR - ASSERTION EXCEPTION - Number of Visits field was not set to 0 by default'
-            email_module.error_mail('VFL Test025', 'When opening the VFL Settings dialog box, the Number of Visits field was not populated with 0 by default', 'AssertionError')
-            visits_populated = False
-        else:
-            function_module.log_to_file('Test_VFL_Module:test025_add_year:Number of Visits field was set to 0 by default', 'PASSED')
-            print 'Asserted that Number of Visits field was set to 0 by default'
-        time.sleep(1)
-        #If visits field is not 0, MAKE IT SO!
-        if visits_populated == False:
-            driver.find_element_by_xpath("//*[@id='NoVisits']").click()
-            driver.find_element_by_xpath("//*[@id='NoVisits']").send_keys(visits_string)
-            time.sleep(2)
-            driver.find_element_by_xpath("//*[@id='NoVisits']").send_keys(Keys.RETURN)
-            time.sleep(2)
-            print "Vists now populated with value = 0"
-        else:
-            print "Visits field is already populated"
+        vfl_page_objects.vfl_visits_default_current(driver)
         #Ensure that No. Visits can not have negative value entered
-        for x in range(3):
-            driver.find_element_by_xpath("//*[@id='formSettings']/div/section[2]/div/span/a[2]").click()
-        visits_field_neg = driver.find_element_by_xpath("//*[@id='NoVisits']")
-        visits_value_neg = visits_field_neg.get_attribute("aria-valuenow")
-        visits_string_neg = str(visits_value_neg)
-        try:
-            assert visits_string_neg == "0"
-        except AssertionError:
-            function_module.log_to_file('Test_VFL_Module:test025_add_year:Number of Visits field can be assigned a negative value', 'FAILED')
-            print 'ERROR - ASSERTION EXCEPTION - Number of Visits field can be assigned a negative value'
-            email_module.error_mail('VFL Test025', 'Test successfully entered a negative value in the Number of Visits field', 'AssertionError')
-        else:
-            function_module.log_to_file('Test_VFL_Module:test025_add_year:Number of Visits field can NOT be assigned a negative value', 'PASSED')
-            print 'Asserted that Number of Visits field can NOT be assigned a negative value'
-        time.sleep(1)
+        vfl_page_objects.vfl_visits_negative(driver, 3)
         #Increase No. Visits by 5 and assert change
-        for x in range(5):
-            driver.find_element_by_xpath("//*[@id='formSettings']/div/section[2]/div/span/a[1]").click()
-        visits_field_new = driver.find_element_by_xpath("//*[@id='NoVisits']")
-        visits_value_new = visits_field_new.get_attribute("aria-valuenow")
-        visits_string_new = str(visits_value_new)
-        try:
-            assert visits_string_new == "5"
-        except AssertionError:
-            function_module.log_to_file('Test_VFL_Module:test025_add_year:Number of Visits field failed to increase to a value of 5', 'FAILED')
-            print 'ERROR - ASSERTION EXCEPTION - Number of Visits field failed to increase to a value of 5'
-            email_module.error_mail('VFL Test025', 'Failed to verify that the Number of Visits field was successfully increased by five', 'AssertionError')
-        else:
-            function_module.log_to_file('Test_VFL_Module:test025_add_year:Number of Visits field was increased to 5', 'PASSED')
-            print 'Asserted that Number of Visits field was increased to 5'
-        time.sleep(1)
+        vfl_page_objects.vfl_visits_increment(driver, 5)
         #Decrease No. Visits by 2 and assert change
-        for x in range(2):
-            driver.find_element_by_xpath("//*[@id='formSettings']/div/section[2]/div/span/a[2]").click()
-        visits_field_set = driver.find_element_by_xpath("//*[@id='NoVisits']")
-        visits_value_set = visits_field_set.get_attribute("aria-valuenow")
-        visits_string_set = str(visits_value_set)
-        try:
-            assert visits_string_set == "3"
-        except AssertionError:
-            function_module.log_to_file('Test_VFL_Module:test025_add_year:Number of Visits field failed to decrease to a value of 3', 'FAILED')
-            print 'ERROR - ASSERTION EXCEPTION - Number of Visits field failed to decrease to a value of 3'
-            email_module.error_mail('VFL Test025', 'Failed to verify that the Number of Visits field was successfully decreased by three', 'AssertionError')
-        else:
-            function_module.log_to_file('Test_VFL_Module:test025_add_year:Number of Visits field was decreased to 3', 'PASSED')
-            print 'Asserted that Number of Visits field was decreased to 3'
-        time.sleep(1)
+        vfl_page_objects.vfl_visits_decrement(driver, 2)
         #Add a row with Current Year and No. Visits = 3
-        driver.find_element_by_xpath("//*[@id='btnSubmitFormSettings']").click()
-        time.sleep(1)
+        vfl_page_objects.submit_vfl_settings(driver)
         print "Have submitted the current year with 3 visits"
         #Assert first row has year = current year
-        first_row_year = driver.find_element_by_xpath("//*[@id='dtSettingsContainer']/tr/td[1]").text
-        first_row_year2 = datetime.datetime.now().year
-        first_row_year2_string = str(first_row_year)
-        try:
-            assert first_row_year == first_row_year2_string
-        except AssertionError:
-            function_module.log_to_file('Test_VFL_Module:test025_add_year:Year for first row is NOT set to the current year', 'FAILED')
-            print 'ERROR - ASSERTION ERROR - Year for first row is not set to the current year'
-            email_module.error_mail('VFL Test025', 'Failed to verify that the first row was successfully added with Year = current year', 'AssertionError')
-            return False
-        else:
-            function_module.log_to_file('Test_VFL_Module:test025_add_year:Year for first row is set to the current year', 'PASSED')
-            print 'Asserted that Year for first row is set to the current year'
-        time.sleep(1)
-        #Assert first row No. Visits = 3
-        first_row_visits = driver.find_element_by_xpath("//*[@id='dtSettingsContainer']/tr/td[2]").text
-        try:
-            assert first_row_visits == "3"
-        except AssertionError:
-            function_module.log_to_file('Test_VFL_Module:test025_add_year:Number of Visits for first row is NOT set to expected value of 3', 'FAILED')
-            print 'ERROR - ASSERTION ERROR - Number of Visits for first rowd is NOT set to expected value of 3'
-            email_module.error_mail('VFL Test025', 'Failed to verify that the first row was successfully added with Numner of Visits = three', 'AssertionError')
-            return False
-        else:
-            function_module.log_to_file('Test_VFL_Module:test025_add_year:Number of Visits for first row is set to expected value of 3', 'PASSED')
-            print 'Asserted that Number of Visits for first row is set to expected value of 3'
-        time.sleep(1)
+        vfl_page_objects.verify_vfl_settings_first_row(driver, current_year, 3)
         #Close the VFL Settings window
-        driver.find_element_by_xpath("//*[@id='cancel_modalSettings']").click()
-        time.sleep(1)
+        vfl_page_objects.close_vfl_settings(driver)
         print "Closed VFL Settings dialog box"
         #Log out of the application
         common_page_objects.logout(driver)
@@ -1420,102 +1271,41 @@ class Test_003_VFL_Settings(unittest.TestCase):
         already exists OR by selecting the edit button for an existing row"""
         driver = self.driver
         driver.get(self.base_url + "/")
+        current_year = datetime.datetime.now().year
         #Login to the application
         common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
         function_module.log_to_file('Test_VFL_Module:test026_update_year:Successfully logged in and started test')
         print "Logged in successfully"
         #Select the VFL Module
-        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
-        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
-        driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
+        vfl_page_objects.open_vfl_module(driver)
+        vfl_page_objects.wait_for_vfl_records(driver)
         print "Moved to VFL Module"
         #Open the VFL Settings Window
-        function_module.wait_for_element_XPATH(driver, "//*[@id='content']/div[1]/div[2]/div/a")
-        driver.find_element_by_xpath("//*[@id='content']/div[1]/div[2]/div/a").click()
-        function_module.wait_for_element_XPATH(driver, "//*[@id='Year']")
+        vfl_page_objects.open_vfl_settings(driver)
         print "Successfully opened VFL Settings dialog"
         #Assert that Year field is automatically populated with current year
-        year_populated = True
-        year_field = driver.find_element_by_xpath("//*[@id='Year']")
-        year_value = year_field.get_attribute("aria-valuenow")
-        current_year = datetime.datetime.now().year
-        year_string = str(current_year)
-        try:
-            assert year_value == year_string
-        except AssertionError:
-            function_module.log_to_file('Test_VFL_Module:test026_update_year:Year field is NOT set to current year by default', 'FAILED')
-            print 'ERROR - ASSERTION EXCPETION - The Settings Year field is NOT set to current year by default'
-            email_module.error_mail('VFL Test026', 'Failed to verify that the first row was is set to Year = current year', 'AssertionError')
-            year_populated = False
-        else:
-            function_module.log_to_file('Test_VFL_Module:test026_update_year:Year field is set to current year by default', 'PASSED')
-            print 'Asserted that the Settings Year field is set to current year by default'
-        time.sleep(1)
-        #If year field is not current year, MAKE IT SO!
-        if year_populated == False:
-            driver.find_element_by_xpath("//*[@id='Year']").click()
-            driver.find_element_by_xpath("//*[@id='Year']").send_keys(year_string)
-            time.sleep(2)
-            driver.find_element_by_xpath("//*[@id='Year']").send_keys(Keys.RETURN)
-            time.sleep(2)
-            print "Year field is not populated with current year"
-        else:
-            print "Year field is already populated"
+        vfl_page_objects.vfl_year_default_current(driver)
         #Assert first row No. Visits = 3
-        first_row_visits = driver.find_element_by_xpath("//*[@id='dtSettingsContainer']/tr/td[2]").text
-        try:
-            assert first_row_visits == "3"
-        except AssertionError:
-            function_module.log_to_file('Test_VFL_Module:test026_update_year:Number of Visits for first row is NOT set to expected value of 3', 'FAILED')
-            print 'ERROR - ASSERTION EXCEPTION - Number of Visits for first row is NOT set to expected value of 3'
-            email_module.error_mail('VFL Test026', 'Failed to verify that the first row was set to Numner of Visits = three', 'AssertionError')
-        else:
-            function_module.log_to_file('Test_VFL_Module:test026_update_year:Number of Visits for first row is set to expected value of 3', 'PASSED')
-            print 'Asserted that Number of Visits for first row is set to expected value of 3'
-        time.sleep(1)
-        #Change Current Years No. Visits = 1 using fields at top of form
-        driver.find_element_by_xpath("//*[@id='formSettings']/div/section[2]/div/span/a[1]").click()
-        driver.find_element_by_xpath("//*[@id='btnSubmitFormSettings']").click()
-        time.sleep(1)
-        print "Changed current years number of Visits from 3 to 1"
-        #Assert first row No. Visits = 1
-        first_row_visits_update1 = driver.find_element_by_xpath("//*[@id='dtSettingsContainer']/tr/td[2]").text
-        try:
-            assert first_row_visits_update1 == "1"
-        except AssertionError:
-            function_module.log_to_file('Test_VFL_Module:test026_update_year:Number of Visits for first row is NOT set to expected value of 1', 'FAILED')
-            print 'ERROR - ASSERTION ERROR - Number of Visits for first row is NOT set to expected value of 1'
-            email_module.error_mail('VFL Test026', 'Failed to verify that by using the fields are the top of the form, the first row was successfully changed to Numner of Visits = one', 'AssertionError')
-        else:
-            function_module.log_to_file('Test_VFL_Module:test026_update_year:Number of Visits for first row is set to expected value of 1', 'PASSED')
-            print 'Asserted that Number of Visits for first row is set to expected value of 1'
-        time.sleep(1)
-        #Change Current Years No. Visits = 4 using edit button
-        driver.find_element_by_xpath("//*[@id='dtSettingsContainer']/tr/td[3]/div/div/a[1]/i").click()
-        time.sleep(1)
-        driver.find_element_by_xpath("//*[@id='btnCancelFormSettings']").click()
-        time.sleep(1)
-        driver.find_element_by_xpath("//*[@id='dtSettingsContainer']/tr/td[3]/div/div/a[1]/i").click()
-        for x in range(3):
-            driver.find_element_by_xpath("//*[@id='formSettings']/div/section[2]/div/span/a[1]").click()
-        driver.find_element_by_xpath("//*[@id='btnUpdateFormSettings']").click()
-        time.sleep(1)
-        print "Changed current years number of Visits from 1 to 4"
-        #Assert first row No. Visits = 4
-        first_row_visits_update2 = driver.find_element_by_xpath("//*[@id='dtSettingsContainer']/tr/td[2]").text
-        try:
-            assert first_row_visits_update2 == "4"
-        except AssertionError:
-            function_module.log_to_file('Test_VFL_Module:test026_update_year:Number of Visits for first row is NOT set to expected value of 4', 'FAILED')
-            print 'ERROR - ASSERTION EXCEPTION - Number of Visits for first row is NOT set to expected value of 4'
-            email_module.error_mail('VFL Test026', 'Failed to verify that by using the edit button, the first row was successfully changed to Numner of Visits = four', 'AssertionError')
-        else:
-            function_module.log_to_file('Test_VFL_Module:test026_update_year:Number of Visits for first row is set to expected value of 4', 'PASSED')
-            print 'Asserted that Number of Visits for first row is set to expected value of 4'
-        time.sleep(1)
+        vfl_page_objects.verify_vfl_settings_first_row(driver, current_year, 3)
+        #Change Current Years No. Visits = 5 without using Edit button
+        vfl_page_objects.vfl_visits_increment(driver, 5)
+        vfl_page_objects.submit_vfl_settings(driver)
+        vfl_page_objects.refresh_vfl_settings(driver)
+        print "Changed current years number of Visits from 3 to 5 without using the Edit button"
+        #Assert first row No. Visits = 5
+        vfl_page_objects.verify_vfl_settings_first_row(driver, current_year, 5)
+        #Edit first row, cancel change and verify row remains unchanged
+        vfl_page_objects.edit_vfl_settings(driver)
+        vfl_page_objects.cancel_edit_vfl_settings(driver)
+        vfl_page_objects.refresh_vfl_settings(driver)
+        vfl_page_objects.verify_vfl_settings_first_row(driver, current_year, 5)
+        #Change the Current Years No. Visits = 2 by using the Edit button
+        vfl_page_objects.edit_first_row(driver, current_year, 2)
+        vfl_page_objects.refresh_vfl_settings(driver)
+        vfl_page_objects.verify_vfl_settings_first_row(driver, current_year, 3)
+        print "Changed current years number of Visits from 5 to 2 by using the Edit button"
         #Close the VFL Settings window
-        driver.find_element_by_xpath("//*[@id='cancel_modalSettings']").click()
-        time.sleep(1)
+        vfl_page_objects.close_vfl_settings(driver)
         print "Closed VFL Settings dialog box"
         #Log out of the application
         common_page_objects.logout(driver)
@@ -1523,47 +1313,33 @@ class Test_003_VFL_Settings(unittest.TestCase):
         print "Test_VFL_Module:test026_update_year:TEST COMPLETED"
 
     def test_027_delete_year(self):
-        """Simple test is used to delete the row to the VFL Settings table
+        """Test is used to delete the row to the VFL Settings table
         that was just added and edited."""
         driver = self.driver
-        self.driver.implicitly_wait(5)
+        #self.driver.implicitly_wait(5)
         driver.get(self.base_url + "/")
         #Login to the application
         common_page_objects.login(driver, client_variables.username1, client_variables.pword1)
         function_module.log_to_file('Test_VFL_Module:test027_delete_year:Successfully logged in and started test')
         print "Logged in successfully"
         #Select the VFL Module
-        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
-        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
-        driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
+        vfl_page_objects.open_vfl_module(driver)
+        vfl_page_objects.wait_for_vfl_records(driver)
         print "Moved to VFL Module"
         #Open the VFL Settings Window
-        function_module.wait_for_element_XPATH(driver, "//*[@id='content']/div[1]/div[2]/div/a")
-        driver.find_element_by_xpath("//*[@id='content']/div[1]/div[2]/div/a").click()
-        function_module.wait_for_element_XPATH(driver, "//*[@id='Year']")
+        vfl_page_objects.open_vfl_settings(driver)
         print "Successfully opened VFL Settings dialog"
         #Delete first row for current year
-        driver.find_element_by_xpath("//*[@id='dtSettingsContainer']/tr/td[3]/div/div/a[2]/i").click()
-        function_module.wait_for_element_XPATH(driver, "//*[@id='bot2-Msg1']")
-        driver.find_element_by_xpath("//*[@id='bot2-Msg1']").click()
+        vfl_page_objects.delete_vfl_settings(driver)
         print "Deleting the first row"
-        time.sleep(3)
+        time.sleep(5)
         #Verify that first row has been deleted
-        #self.driver.implicitly_wait(0)
-        try:
-            driver.find_element_by_xpath("//*[@id='dtSettingsContainer']/tr/td[1]")
-        except NoSuchElementException:
-            function_module.log_to_file('Test_VFL_Module:test011_view_existing_vfl_record:Verified that the first row has been deleted', 'PASSED')
-            print 'Verified that the first row has been deleted'
-        else:
-            function_module.log_to_file('Test_VFL_Module:test011_view_existing_vfl_record:Could not verify that the first row has been deleted', 'FAILED')
-            print 'ERROR WARNING - Could not verify that the first row has been deleted'
-            email_module.error_mail('VFL Test027', 'Test could not successfully verify that the first row from the Settings page was deleted as expected', 'NoSuchElementException')
-            return False
-        #self.driver.implicitly_wait(30)
+        self.driver.implicitly_wait(0)
+        function_module.verify_element_not_present_XPATH(driver, "//*[@id='dtSettingsContainer']/tr/td[1]", 'VFL', 'test027_delete_year',
+        'Verified that the first row has been deleted', 'Test could not successfully verify that the first row from the Settings page was deleted as expected')
+        self.driver.implicitly_wait(30)
         #Close the VFL Settings window
-        driver.find_element_by_xpath("//*[@id='cancel_modalSettings']").click()
-        time.sleep(1)
+        vfl_page_objects.close_vfl_settings(driver)
         print "Closed VFL Settings dialog box"
         #Log out of the application
         common_page_objects.logout(driver)
@@ -1603,25 +1379,13 @@ class Test_004_VFL_Export(unittest.TestCase):
         time.sleep(5)
         print "Logged in successfully"
         #Select the VFL Module
-        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
-        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
-        driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
+        vfl_page_objects.open_vfl_module(driver)
+        vfl_page_objects.wait_for_vfl_records(driver)
         print "Moved to VFL Module"
         #export all current records
-        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60)
-        driver.find_element_by_css_selector("i.glyphicon.glyphicon-export").click()
-        function_module.wait_for_element_XPATH(driver, "//*[@id='formExport']/div[1]/section[1]/div/label[1]/i")
-        driver.find_element_by_xpath("//*[@id='formExport']/div[1]/section[1]/div/label[1]/i").click()
-        time.sleep(1)
-        Select(driver.find_element_by_xpath("//*[@id='ExportAs']")).select_by_visible_text("Excel")
-        function_module.wait_for_element_ID(driver, "submit_modalExport")
-        driver.find_element_by_id("submit_modalExport").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1")
-        driver.find_element_by_id("bot2-Msg1").click()
-        time.sleep(2)
-        print "Successfully exported all current VFL records - EXCEL"
+        vfl_page_objects.vfl_export(driver, "Excel", "1")
         #Copy export to client specific folder
-        function_module.move_file()
+        function_module.move_file(client_variables.output_folder, client_variables.client_folder)
         function_module.log_to_file('Test_VFL_Module:test028_export_all_excel:Successfully moved excel file into client specific folder')
         time.sleep(2)
         print "Moved file into client specific folder"
@@ -1642,23 +1406,13 @@ class Test_004_VFL_Export(unittest.TestCase):
         time.sleep(5)
         print "Logged in successfully"
         #Select the VFL Module
-        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
-        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
-        driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
+        vfl_page_objects.open_vfl_module(driver)
+        vfl_page_objects.wait_for_vfl_records(driver)
         print "Moved to VFL Module"
         #export current page of VFL records
-        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60)
-        driver.find_element_by_css_selector("i.glyphicon.glyphicon-export").click()
-        function_module.wait_for_element_XPATH(driver, "//*[@id='formExport']/div[1]/section[1]/div/label[2]/i")
-        driver.find_element_by_xpath("//*[@id='formExport']/div[1]/section[1]/div/label[2]/i").click()
-        time.sleep(1)
-        Select(driver.find_element_by_xpath("//*[@id='ExportAs']")).select_by_visible_text("Excel")
-        function_module.wait_for_element_ID(driver, "submit_modalExport")
-        driver.find_element_by_id("submit_modalExport").click()
-        time.sleep(2)
-        print "Successfully exported current page of VFL records - EXCEL"
+        vfl_page_objects.vfl_export(driver, "Excel", "2")
         #Copy export to client specific folder
-        function_module.move_file()
+        function_module.move_file(client_variables.output_folder, client_variables.client_folder)
         function_module.log_to_file('Test_VFL_Module:test029_export_current_page_excel:Successfully moved excel file into client specific folder')
         time.sleep(2)
         print "Moved file into client specific folder"
@@ -1679,28 +1433,15 @@ class Test_004_VFL_Export(unittest.TestCase):
         time.sleep(5)
         print "Logged in successfully"
         #Select the VFL Module
-        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
-        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
-        driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
+        vfl_page_objects.open_vfl_module(driver)
+        vfl_page_objects.wait_for_vfl_records(driver)
         print "Moved to VFL Module"
         #Manually select top five records
-        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60)
-        for x in range(1,6):
-            y = str(x)
-            driver.find_element_by_xpath("//*[@id='dtVFL']/tbody/tr["+y+"]/td[1]/input").click()
-        print "Selected top 5 VFL records on first page of list view"
+        vfl_page_objects.select_multiple_vfl_records(driver, 6)
         #export selected records only
-        driver.find_element_by_css_selector("i.glyphicon.glyphicon-export").click()
-        function_module.wait_for_element_XPATH(driver, "//*[@id='formExport']/div[1]/section[1]/div/label[3]/i")
-        driver.find_element_by_xpath("//*[@id='formExport']/div[1]/section[1]/div/label[3]/i").click()
-        time.sleep(1)
-        Select(driver.find_element_by_xpath("//*[@id='ExportAs']")).select_by_visible_text("Excel")
-        function_module.wait_for_element_ID(driver, "submit_modalExport")
-        driver.find_element_by_id("submit_modalExport").click()
-        time.sleep(2)
-        print "Successfully exported selected VFL records - EXCEL"
+        vfl_page_objects.vfl_export(driver, "Excel", "3")
         #Copy export to client specific folder
-        function_module.move_file()
+        function_module.move_file(client_variables.output_folder, client_variables.client_folder)
         function_module.log_to_file('Test_VFL_Module:test030_export_selected_rows_excel:Successfully moved excel file into client specific folder')
         time.sleep(2)
         print "Moved file into client specific folder"
@@ -1721,25 +1462,13 @@ class Test_004_VFL_Export(unittest.TestCase):
         time.sleep(5)
         print "Logged in successfully"
         #Select the VFL Module
-        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
-        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
-        driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
+        vfl_page_objects.open_vfl_module(driver)
+        vfl_page_objects.wait_for_vfl_records(driver)
         print "Moved to VFL Module"
         #export all current records
-        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60)
-        driver.find_element_by_css_selector("i.glyphicon.glyphicon-export").click()
-        function_module.wait_for_element_XPATH(driver, "//*[@id='formExport']/div[1]/section[1]/div/label[1]/i")
-        driver.find_element_by_xpath("//*[@id='formExport']/div[1]/section[1]/div/label[1]/i").click()
-        time.sleep(1)
-        Select(driver.find_element_by_xpath("//*[@id='ExportAs']")).select_by_visible_text("CSV")
-        function_module.wait_for_element_ID(driver, "submit_modalExport")
-        driver.find_element_by_id("submit_modalExport").click()
-        function_module.wait_for_element_ID(driver, "bot2-Msg1")
-        driver.find_element_by_id("bot2-Msg1").click()
-        time.sleep(2)
-        print "Successfully exported all current VFL records - CSV"
+        vfl_page_objects.vfl_export(driver, "CSV", "1")
         #Copy export to client specific folder
-        function_module.move_file()
+        function_module.move_file(client_variables.output_folder, client_variables.client_folder)
         function_module.log_to_file('Test_VFL_Module:test031_export_all_csv:Successfully moved csv file into client specific folder')
         time.sleep(2)
         print "Moved file into client specific folder"
@@ -1760,23 +1489,13 @@ class Test_004_VFL_Export(unittest.TestCase):
         time.sleep(5)
         print "Logged in successfully"
         #Select the VFL Module
-        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
-        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
-        driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
+        vfl_page_objects.open_vfl_module(driver)
+        vfl_page_objects.wait_for_vfl_records(driver)
         print "Moved to VFL Module"
         #export current page of VFL records
-        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60)
-        driver.find_element_by_css_selector("i.glyphicon.glyphicon-export").click()
-        function_module.wait_for_element_XPATH(driver, "//*[@id='formExport']/div[1]/section[1]/div/label[2]/i")
-        driver.find_element_by_xpath("//*[@id='formExport']/div[1]/section[1]/div/label[2]/i").click()
-        time.sleep(1)
-        Select(driver.find_element_by_xpath("//*[@id='ExportAs']")).select_by_visible_text("CSV")
-        function_module.wait_for_element_ID(driver, "submit_modalExport")
-        driver.find_element_by_id("submit_modalExport").click()
-        time.sleep(2)
-        print "Successfully exported current page of VFL records - CSV"
+        vfl_page_objects.vfl_export(driver, "CSV", "2")
         #Copy export to client specific folder
-        function_module.move_file()
+        function_module.move_file(client_variables.output_folder, client_variables.client_folder)
         function_module.log_to_file('Test_VFL_Module:test032_export_current_page_csv:Successfully moved csv file into client specific folder')
         time.sleep(2)
         print "Moved file into client specific folder"
@@ -1797,28 +1516,15 @@ class Test_004_VFL_Export(unittest.TestCase):
         time.sleep(5)
         print "Logged in successfully"
         #Select the VFL Module
-        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
-        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
-        driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
+        vfl_page_objects.open_vfl_module(driver)
+        vfl_page_objects.wait_for_vfl_records(driver)
         print "Moved to VFL Module"
         #Manually select top five records
-        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60)
-        for x in range(1,6):
-            y = str(x)
-            driver.find_element_by_xpath("//*[@id='dtVFL']/tbody/tr["+y+"]/td[1]/input").click()
-        print "Selected top 5 VFL records on first page of list view"
+        vfl_page_objects.select_multiple_vfl_records(driver, 6)
         #export selected records only
-        driver.find_element_by_css_selector("i.glyphicon.glyphicon-export").click()
-        function_module.wait_for_element_XPATH(driver, "//*[@id='formExport']/div[1]/section[1]/div/label[3]/i")
-        driver.find_element_by_xpath("//*[@id='formExport']/div[1]/section[1]/div/label[3]/i").click()
-        time.sleep(1)
-        Select(driver.find_element_by_xpath("//*[@id='ExportAs']")).select_by_visible_text("CSV")
-        function_module.wait_for_element_ID(driver, "submit_modalExport")
-        driver.find_element_by_id("submit_modalExport").click()
-        time.sleep(2)
-        print "Successfully exported selected VFL records - CSV"
+        vfl_page_objects.vfl_export(driver, "CSV", "3")
         #Copy export to client specific folder
-        function_module.move_file()
+        function_module.move_file(client_variables.output_folder, client_variables.client_folder)
         function_module.log_to_file('Test_VFL_Module:test033_export_selected_rows_csv:Successfully moved excel file into client specific folder')
         time.sleep(2)
         print "Moved file into client specific folder"
@@ -1860,61 +1566,19 @@ class Test_005_VFL_Reports(unittest.TestCase):
         time.sleep(5)
         print "Logged in successfully"
         #Select the VFL Module
-        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
-        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
-        driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
+        vfl_page_objects.open_vfl_module(driver)
+        vfl_page_objects.wait_for_vfl_records(driver)
         print "Moved to VFL Module"
         #Move to the Reports section
-        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60)
-        driver.find_element_by_xpath("//*[@id='left-panel']/nav/ul/li[3]/a/i").click()
-        function_module.wait_for_element_XPATH(driver, "//*[@id='content']/div[1]/div[1]/h1")
-        elem = driver.find_element_by_xpath("//*[@id='content']/div[1]/div[1]/h1").text
-        try:
-            assert elem == 'Reports'
-        except AssertionError:
-            function_module.log_to_file('Test_VFL_Module:test034_vfl_activity_summary_report_no_subgroups:Failed to access to the Report tab', 'FAILED')
-            print 'ERROR - ASSERTION EXCEPTION - Failed to access to the Report tab'
-            email_module.error_mail('VFL Test034', 'Test could not verify that the Reports page has been accessed successfully', 'AssertionError')
-            return False
-        else:
-            function_module.log_to_file('Test_VFL_Module:test034_vfl_activity_summary_report_no_subgroups:Successfully moved to the Report section', 'PASSED')
-            print 'Asserted that we have successfully moved to the Report section'
+        vfl_page_objects.vfl_reports_button(driver)
         #Open the VFL Activity Summary Report parameters & Verify that WorkGroup field is mandatory
-        driver.find_element_by_xpath("//*[@id='widDtReports']/div/div[2]/div[1]/a").click()
-        function_module.wait_for_element_XPATH(driver, "//*[@id='submit_modalSettings']")
-        print "Opened VFL Activity Summary Report parameters"
-        elem = driver.find_element_by_xpath("//*[@class='select required-select2']/input")
-        workgroup_mandatory = elem.get_attribute("aria-required")
-        function_module.field_is_mandatory(workgroup_mandatory)
         #Enter a high tiered WorkGroup that has lots of VFL records created during test.
         #Don't select the Include SubGroups checkbox.
-        driver.find_element_by_xpath("//*[@id='s2id_autogen2']").click()
-        driver.find_element_by_xpath("//*[@id='s2id_autogen2']").send_keys(client_variables.wg_default_false)
-        time.sleep(3)
-        driver.find_element_by_xpath("//*[@id='s2id_autogen2']").send_keys(Keys.RETURN)
-        time.sleep(1)
-        driver.find_element_by_xpath("//*[@id='submit_modalSettings']").click()
-        print "Generated and downloaded VFL Activity Summary Report"
-        time.sleep(6)
-        #Rename and Copy report to client specific folder
-        source = client_variables.output_folder
-        newname = 'Summary Report No Subgroups.pdf'
-        renamefiles = os.listdir(source)
-        ext = (".xlsx", ".csv", ".pdf", ".png")
-        for renamefile in renamefiles:
-            if renamefile.endswith(ext):
-                renamefile = source + "/" + renamefile
-                print "renaming:", renamefile
-                newname = source + "/" + newname
-                print "newname:", newname
-                os.rename(renamefile, newname)
-            elif renamefile.startswith('GetTotalByYearReport'):
-                renamefile = source + "/" + renamefile
-                print "renaming:", renamefile
-                newname = source + "/" + newname
-                print "newname:", newname
-                os.rename(renamefile, newname)
-        function_module.move_file()
+        vfl_page_objects.generate_basic_vfl_activity_summary_report(driver, client_variables.wg_default_false)
+        print "Opened VFL Activity Summary Report parameters, generated and download VFL summary report - WorkGroup with NO SubGroups"        
+        #Rename and move report to client specific folder
+        function_module.rename_file(client_variables.output_folder, 'GetTotalByYearReport', 'Summary Report No Subgroups.pdf')
+        function_module.move_file(client_variables.output_folder, client_variables.client_folder)
         function_module.log_to_file('Test_VFL_Module:test034_vfl_activity_summary_report_no_subgroups:Successfully moved report file into client specific folder')
         time.sleep(2)
         print "Moved file into client specific folder"
@@ -1935,63 +1599,19 @@ class Test_005_VFL_Reports(unittest.TestCase):
         time.sleep(5)
         print "Logged in successfully"
         #Select the VFL Module
-        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
-        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
-        driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
+        vfl_page_objects.open_vfl_module(driver)
+        vfl_page_objects.wait_for_vfl_records(driver)
         print "Moved to VFL Module"
         #Move to the Reports section
-        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60)
-        driver.find_element_by_xpath("//*[@id='left-panel']/nav/ul/li[3]/a/i").click()
-        function_module.wait_for_element_XPATH(driver, "//*[@id='content']/div[1]/div[1]/h1")
-        elem = driver.find_element_by_xpath("//*[@id='content']/div[1]/div[1]/h1").text
-        try:
-            assert elem == 'Reports'
-        except AssertionError:
-            function_module.log_to_file('Test_VFL_Module:test035_vfl_activity_summary_report_with_subgroups:Failed to access to the Report tab', 'FAILED')
-            print 'ERROR - ASSERTION EXCEPTION - Failed to access to the Report tab'
-            email_module.error_mail('VFL Test035', 'Test could not verify that the Reports page has been accessed successfully', 'AssertionError')
-            return False
-        else:
-            function_module.log_to_file('Test_VFL_Module:test035_vfl_activity_summary_report_with_subgroups:Successfully moved to the Report section', 'PASSED')
-            print 'Asserted that we have successfully moved to the Report section'
+        vfl_page_objects.vfl_reports_button(driver)
         #Open the VFL Activity Summary Report parameters
-        driver.find_element_by_xpath("//*[@id='widDtReports']/div/div[2]/div[1]/a").click()
-        function_module.wait_for_element_XPATH(driver, "//*[@id='submit_modalSettings']")
-        print "Opened VFL Activity Summary Report parameters"
-        elem = driver.find_element_by_xpath("//*[@class='select required-select2']/input")
-        workgroup_mandatory = elem.get_attribute("aria-required")
-        function_module.field_is_mandatory(workgroup_mandatory)
         #Enter a root WorkGroup that has lots of VFL records created during test.
         #Select Include SubGroups checkbox.
-        driver.find_element_by_xpath("//*[@id='s2id_autogen2']").click()
-        driver.find_element_by_xpath("//*[@id='s2id_autogen2']").send_keys(client_variables.root_wg)
-        time.sleep(3)
-        driver.find_element_by_xpath("//*[@id='s2id_autogen2']").send_keys(Keys.RETURN)
-        time.sleep(1)
-        driver.find_element_by_xpath("//*[@id='formSettings']/section[2]/div[2]/label/i").click()
-        time.sleep(1)
-        driver.find_element_by_xpath("//*[@id='submit_modalSettings']").click()
-        print "Generated and download VFL Activity Summary Report"
-        time.sleep(30)
+        vfl_page_objects.generate_basic_vfl_activity_summary_report_with_subgroups(driver, client_variables.root_wg)
+        print "Opened VFL Activity Summary Report parameters, generated and download VFL summary report - WorkGroup with SubGroups"        
         #Rename and Copy report to client specific folder
-        source = client_variables.output_folder
-        newname = 'Summary Report With Subgroups.pdf'
-        renamefiles = os.listdir(source)
-        ext = (".xlsx", ".csv", ".pdf", ".png")
-        for renamefile in renamefiles:
-            if renamefile.endswith(ext):
-                renamefile = source + "/" + renamefile
-                print "renaming:", renamefile
-                newname = source + "/" + newname
-                print "newname:", newname
-                os.rename(renamefile, newname)
-            elif renamefile.startswith('GetTotalByYearReport'):
-                renamefile = source + "/" + renamefile
-                print "renaming:", renamefile
-                newname = source + "/" + newname
-                print "newname:", newname
-                os.rename(renamefile, newname)
-        function_module.move_file()
+        function_module.rename_file(client_variables.output_folder, 'GetTotalByYearReport', 'Summary Report With Subgroups.pdf')
+        function_module.move_file(client_variables.output_folder, client_variables.client_folder)
         function_module.log_to_file('Test_VFL_Module:test035_vfl_activity_summary_report_with_subgroups:Successfully moved report file into client specific folder')
         time.sleep(2)
         print "Moved file into client specific folder"
@@ -2011,108 +1631,40 @@ class Test_005_VFL_Reports(unittest.TestCase):
         time.sleep(5)
         print "Logged in successfully"
         #Select the VFL Module
-        #function_module.wait_for_element_CSS(driver, "i.fa.fa-lg.fa-fw.fa-comments")
-        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
-        driver.find_element_by_css_selector("i.fa.fa-lg.fa-fw.fa-comments").click()
+        vfl_page_objects.open_vfl_module(driver)
+        vfl_page_objects.wait_for_vfl_records(driver)
         print "Moved to VFL Module"
         #Edit first VFL record in list, adding acts with comments, attachments and actions
-        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60)
-        driver.find_element_by_xpath("//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i").click()
-        function_module.wait_for_element_ID(driver, "btnNextSubmit")
+        vfl_page_objects.edit_latest_vfl_record(driver)
         print "Edited first VFL record on list view page"
         #Move successfully to the next tab
-        driver.find_element_by_id("btnNextSubmit").click()
-        function_module.wait_for_element_XPATH(driver, "//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a")
+        vfl_page_objects.vfl_next_button(driver)
         print "Moved to Acts Tab"
         #Add a Safe Act of type 1
-        driver.find_element_by_xpath("//*[@id='formActs']/div/section[1]/div/label[1]/i").click()
-        Select(driver.find_element_by_id("Acts")).select_by_visible_text(client_variables.act_type1)
-        driver.find_element_by_id("btnSubmitFormActs").click()
-        time.sleep(2)
+        vfl_page_objects.add_vfl_act(driver, 1, client_variables.act_type1)
         print "Added a Safe Act of type1"
         #Add a Conversation & attach an image
-        driver.find_element_by_css_selector("i.fa.fa-comment-o.glyphicon-size").click()
-        time.sleep(1)
-        driver.find_element_by_xpath("//*[@id='Comment']").click()
-        time.sleep(1)
-        driver.find_element_by_xpath("//*[@id='Comment']").send_keys("Testing adding conversations")
-        time.sleep(1)
-        driver.find_element_by_xpath("//*[@id='btnAdd_Files']/input[@type='file']").send_keys("V:\QA\Automation\Automation_Resources\Attachments\Conversation Image\PM5544_with_non-PAL_signals.png")
-        time.sleep(5)  
-        driver.find_element_by_id("submit_modalConversation").click()
-        time.sleep(1)
+        vfl_page_objects.add_conversation(driver, "Testing adding conversations")
+        driver.refresh()
+        vfl_page_objects.add_image(driver, "V:\QA\Automation\Automation_Resources\Attachments\Conversation Image\PM5544_with_non-PAL_signals.png")
+        driver.refresh()
         print "Added a conversation with image file attached"
         #Add an Action
-        driver.find_element_by_css_selector("i.fa.fa-file-text-o.glyphicon-size").click()
-        time.sleep(1)
-        #Select Due Date
-        driver.find_element_by_xpath("//*[@id='DueDate']").send_keys(function_module.today())
-        driver.find_element_by_xpath("//*[@id='DueDate']").send_keys(Keys.RETURN)
-        time.sleep(2)
-        #Select Priority
-        Select(driver.find_element_by_xpath("//*[@id='Priority']")).select_by_visible_text("Low")
-        time.sleep(2)
-        #Add a Description
-        driver.find_element_by_xpath("//*[@id='Description']").click()
-        driver.find_element_by_xpath("//*[@id='Description']").send_keys("testing automated VFL Corrective Actions")
-        time.sleep(1)
-        #Select an AssignedTo user
-        driver.find_element_by_xpath("//*[@id='s2id_autogen1']").click()
-        driver.find_element_by_xpath("//*[@id='s2id_autogen1']").send_keys(client_variables.username2)
-        time.sleep(5)
-        driver.find_element_by_xpath("//*[@id='s2id_autogen1']").send_keys(Keys.RETURN)
-        time.sleep(1)
-        #Save the Action
-        driver.find_element_by_xpath("//*[@id='submit_modalAction']").click()
-        time.sleep(5)
+        vfl_page_objects.add_action(driver, function_module.today(), "Low", "testing automated VFL Corrective Actions", client_variables.username2)
         print "Added an Action"
         #Select the finish button to return to the Main List View
-        driver.find_element_by_xpath("//*[@id='bootstrap-wizard-1']/div[2]/div[3]/div/div/ul/li[2]/a").click()
-        function_module.wait_for_element_CSS(driver, "i.fa.fa-power-off")
+        vfl_page_objects.vfl_finish_button(driver)
         print "Successfully saved VFL Record and returned to list view"
         #Assert the Print Report button is disabled by default
-        elem = driver.find_element_by_xpath("//*[@id='printVfl']")
-        print_disabled = elem.get_attribute("disabled")
-        function_module.field_is_read_only(print_disabled)
-        time.sleep(1)
-        print "Print Report button disabled by default"
         #Select the first VFL record and choose the Print Report button
-        driver.find_element_by_xpath("//*[@id='dtVFL']/tbody/tr[1]/td[1]/input").click()
-        time.sleep(3)
-        driver.find_element_by_xpath("//*[@id='printVfl']").click()
-        time.sleep(3)
-        function_module.log_to_file('Test_VFL_Module:test036_vfl_summary_report:Successfully run Print Report for VFL Record')
-        print "Selected VFL Record and selected Print Report button"
         #Take a screengrab of the generated report
-        driver.switch_to_window(driver.window_handles[-1])
-        time.sleep(2)
-        driver.get_screenshot_as_file('V:/QA/Automation/Automation_Resources/Output/summary_report.png')
-        time.sleep(2)
-        #driver.get_screenshot_as_file(screenshot_string)
+        vfl_page_objects.generate_summary_report_for_vfl_record(driver)
         function_module.log_to_file('Test_VFL_Module:test036_vfl_summary_report:Successfully took a screenshot of report')
         print "took screenshot and saved to output folder"
         time.sleep(6)
         #Rename and Copy screengrab to client specific folder
-        source = client_variables.output_folder
-        newname = 'Print Report Screengrab.png'
-        renamefiles = os.listdir(source)
-        ext = (".xlsx", ".csv", ".pdf", ".png")
-        for renamefile in renamefiles:
-            if renamefile.endswith(ext):
-                renamefile = source + "/" + renamefile
-                print "renaming:", renamefile
-                newname = source + "/" + newname
-                print "newname:", newname
-                os.rename(renamefile, newname)
-            elif renamefile.startswith('GetTotalByYearReport'):
-                renamefile = source + "/" + renamefile
-                print "renaming:", renamefile
-                newname = source + "/" + newname
-                print "newname:", newname
-                os.rename(renamefile, newname)
-        function_module.move_file()
-        function_module.log_to_file('Test_VFL_Module:test036_vfl_summary_report:Successfully moved screenshot of report into client specific folder')
-        time.sleep(2)
+        function_module.rename_file(client_variables.output_folder, 'GetTotalByYearReport', 'Print Report Screengrab.png')
+        function_module.move_file(client_variables.output_folder, client_variables.client_folder)
         print "Moved file into client specific folder"
         #Log out of the application
         driver.switch_to_window(driver.window_handles[0])

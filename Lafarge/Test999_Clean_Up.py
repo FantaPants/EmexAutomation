@@ -25,19 +25,7 @@ class Test_002_VFL_Clean_Up(unittest.TestCase):
         print "Moved to VFL Module"
         time.sleep(5)
         #Delete all VFL records
-        function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60)
-        amount_of_records = driver.find_element_by_xpath("//*[@id='dtVFL_info']").text
-        print amount_of_records
-        while amount_of_records != '0 to 0 of 0 entries':
-            function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/thead/tr/th[1]/input")
-            driver.find_element_by_xpath("//*[@id='dtVFL']/thead/tr/th[1]/input").click()
-            function_module.wait_for_element_XPATH(driver, "//*[@id='removeVfl']/i")
-            driver.find_element_by_xpath("//*[@id='removeVfl']/i").click()
-            function_module.wait_for_element_XPATH(driver, "//*[@id='bot2-Msg1']")
-            driver.find_element_by_xpath("//*[@id='bot2-Msg1']").click()
-            time.sleep(3)
-            amount_of_records = driver.find_element_by_xpath("//*[@id='dtVFL_info']").text
-            print amount_of_records
+        vfl_page_objects.delete_remaining_vfl_records(driver)
         print "Total number of Test VFL Records now = 0"
         #Log out of the application
         common_page_objects.logout(driver)

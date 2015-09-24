@@ -14,7 +14,7 @@ import client_variables, function_module, email_module
 """This module contains a set of common page objects used throughout the Emex application"""
 
 def login(driver, username, password):
-    """function logins into the Emex application using given username and password"""
+    """object logins into the Emex application using given username and password"""
     function_module.wait_for_element_CSS(driver, "button.btn.btn-primary")
     driver.find_element_by_name("UserName").clear()
     driver.find_element_by_name("UserName").send_keys(username)
@@ -23,25 +23,32 @@ def login(driver, username, password):
     driver.find_element_by_css_selector("button.btn.btn-primary").click()    
 
 def logout(driver):
-    """fucntion logouts of the Emex application"""
+    """object logouts of the Emex application"""
     driver.find_element_by_css_selector("i.fa.fa-power-off").click()
     function_module.wait_for_element_ID(driver, "bot2-Msg1")
     driver.find_element_by_id("bot2-Msg1").click()
 
 def move_to_module(driver, locator):
+    """object selects button at given css locator so as to move to a specific module.
+    This common object is designed to be used in module specific objects. While it is
+    very similar to the 'click_button' object, it mainly exists due to the fact that pre
+    V8 there was no homepage, just VFL."""
     #function_module.wait_for_element_CSS(driver, locator)
     function_module.wait_for_element_XPATH(driver, "//*[@id='dtVFL']/tbody/tr[1]/td[8]/div[2]/div/a[2]/i", 60) #Remove in V8
     driver.find_element_by_css_selector(locator).click()
 
 def click_button(driver, locator):
+    """object clicks button found at given xpath locator"""
     function_module.wait_for_element_XPATH(driver, locator, 60)
     driver.find_element_by_xpath(locator).click()
 
 def click_button_css(driver, locator):
+    """object clicks button found at given css locator"""
     function_module.wait_for_element_CSS(driver, locator, 60)
     driver.find_element_by_css_selector(locator).click()
     
 def send_value(driver, locator, value):
+    """object sends value to field at given xpath locator"""
     function_module.wait_for_element_XPATH(driver, locator)
     driver.find_element_by_xpath(locator).click()
     driver.find_element_by_xpath(locator).clear()
@@ -49,6 +56,7 @@ def send_value(driver, locator, value):
     driver.find_element_by_xpath(locator).send_keys(Keys.RETURN)
 
 def send_value_css(driver, locator, value):
+    """object sents value to field at given css locator"""
     function_module.wait_for_element_CSS(driver, locator)
     driver.find_element_by_css_selector(locator).click()
     driver.find_element_by_css_selector(locator).clear()
@@ -56,12 +64,14 @@ def send_value_css(driver, locator, value):
     driver.find_element_by_css_selector(locator).send_keys(Keys.RETURN)
 
 def select_dropdown_value(driver, locator, value):
+    """objects selects value from dropdown at given xpath locator"""
     function_module.wait_for_element_XPATH(driver, locator)
     driver.find_element_by_xpath(locator).click()
     Select(driver.find_element_by_xpath(locator)).select_by_visible_text(value)
     driver.find_element_by_xpath(locator).send_keys(Keys.RETURN)
 
 def select_dropdown_value_css(driver, locator, value):
+    """objects selects value from dropdown at given css locator"""
     function_module.wait_for_element_CSS(driver, locator)
     driver.find_element_by_css_selector(locator).click()
     Select(driver.find_element_by_css_selector(locator)).select_by_visible_text(value)

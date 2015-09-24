@@ -49,7 +49,7 @@ def summary_mail():
     
     #Create and attach zipfile of outputs created during test run
     #zipfile = zipfiles.zip_output()
-    function_module.zip_output()
+    function_module.zip_output(client_variables.output_zip_folder)
     zf = open('outputs.zip', 'rb')
     part2 = MIMEBase('application', "octet-stream")
     part2.set_payload(zf.read())
